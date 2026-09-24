@@ -17,8 +17,8 @@ from core.database import Base, DATABASE_URL
 from modules.auth.models import Role, User
 from modules.tickets.models import Ticket
 
-config.set_main_option("sqlalchemy.url", DATABASE_URL)
-target_metadata = Base.metadata
+config.set_main_option("sqlalchemy.url", DATABASE_URL) #Conectarse usando la url
+target_metadata = Base.metadata #Entrega el mapa de los modelos de la base de datos a Alembic para que pueda generar las migraciones.
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
