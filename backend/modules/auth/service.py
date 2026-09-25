@@ -9,4 +9,4 @@ class AuthService:
         user = self.repository.get_by_username(username)
         if not user or not verify_password(password, user.hashed_password):
             raise ValueError("Credenciales inválidas")
-        return create_access_token(data={"sub": user.username, "role": user.role.name})
+        return create_access_token(data={"sub": user.username, "user_id": user.id, "role": user.role.name})

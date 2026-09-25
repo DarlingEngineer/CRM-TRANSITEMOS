@@ -19,6 +19,10 @@ def get_current_user(
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
-        return {"username": username, "role": payload.get("role")}
+        return {
+            "username": username,
+            "user_id": payload.get("user_id"),
+            "role": payload.get("role"),
+        }
     except JWTError:
         raise credentials_exception
