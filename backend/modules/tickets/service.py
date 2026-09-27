@@ -4,8 +4,8 @@ class TicketService:
     def __init__(self, repository: TicketRepository):
         self.repository = repository
 
-    def create_ticket(self, title: str, body: str | None, priority: str, user_id: int):
-        return self.repository.create(title, body, priority, user_id)
+    def create_ticket(self, title: str, body: str | None, priority: str, area: str, user_id: int):
+        return self.repository.create(title, body, priority, area, user_id)
 
     def list_tickets(self, user_id: int, role: str):
         # Los admins ven todos los tickets; el resto solo los propios

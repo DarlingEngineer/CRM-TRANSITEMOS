@@ -5,8 +5,8 @@ class TicketRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def create(self, title: str, body: str | None, priority: str, user_id: int) -> Ticket:
-        ticket = Ticket(title=title, body=body, priority=priority, user_id=user_id)
+    def create(self, title: str, body: str | None, priority: str, area: str, user_id: int) -> Ticket:
+        ticket = Ticket(title=title, body=body, priority=priority, area=area, user_id=user_id)
         self.db.add(ticket)
         self.db.commit()
         self.db.refresh(ticket)
