@@ -15,10 +15,19 @@ if not existing:
         hashed_password=hash_password("Sbrqscmda0216"),
         role_id=admin_role.id,
     )
+    
     db.add(nuevo_admin)
     db.commit()
     print("Usuario admin creado correctamente.")
 else:
     print("El usuario admin ya existe, no se creó de nuevo.")
+
+role = db.query(Role).filter(Role.name == "solicitante").first()
+if role and not db.query(User).filter(User.username == "solicitante1").first():
+       db.add(
+       User(username="solicitante1",
+        hashed_password=hash_password("Solicitante2026!"), 
+        role_id=role.id))
+       db.commit()
 
 db.close()

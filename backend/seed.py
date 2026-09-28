@@ -1,5 +1,6 @@
 from core.database import SessionLocal
-from modules.auth.models import Role
+from modules.auth.models import User, Role
+from modules.auth.security import hash_password
 
 db = SessionLocal()
 roles_existentes = {r.name for r in db.query(Role).all()}
