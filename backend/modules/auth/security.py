@@ -4,7 +4,7 @@ Hashing de contrasenas y creacion de tokens JWT. La validacion del token (lectur
 """
 
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
 from passlib.context import CryptContext
 from jose import jwt
@@ -31,8 +31,8 @@ def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
 def create_access_token(data: dict) -> str:
-    """cREA UN JWT firmado que expira en ACCESS_TOKEN_EXPIRE_MINUTES"""
+    """Crea un JWT firmado que expira en ACCESS_TOKEN_EXPIRE_MINUTES"""
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
