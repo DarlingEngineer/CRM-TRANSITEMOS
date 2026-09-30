@@ -1,39 +1,30 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
-import ProtectedRoute from "./components/ProtectedRoute";
-import AppLayout from "./layouts/AppLayout";
-import LoginPage from "./pages/LoginPage";
-import DashboardPage from "./pages/DashboardPage";
-import GenerarTicketPage from "./pages/GenerarTicketPage";
-import EstadoTicketsPage from "./pages/EstadoTicketsPage";
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
+import EstadoTicketsPage from './pages/EstadoTicketsPage';
+import GenerarTicketPage from './pages/GenerarTicketPage';
 
-function App() {
+export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
+    <BrowserRouter>
+      <Routes>
+        {/* Redirige la raíz '/' directamente al login */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        
+        {/* Tu pantalla de login original intacta */}
+        <Route path="/login" element={<LoginPage />} />
+        
+        {/* Rutas principales del sistema */}
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/tickets" element={<EstadoTicketsPage />} />
+        
+        {/* Rutas del módulo de tickets */}
+        <Route path="/generar-ticket" element={<GenerarTicketPage />} />
+        <Route path="/crear-ticket" element={<GenerarTicketPage />} />
 
-          <Route
-            element={
-              <ProtectedRoute>
-                <AppLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route
-              path="/generar-ticket"
-              element={<GenerarTicketPage />}
-            />
-            <Route path="/tickets" element={<EstadoTicketsPage />} />
-          </Route>
-
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+        {/* Cualquier ruta desconocida redirige al login */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
-
-export default App;

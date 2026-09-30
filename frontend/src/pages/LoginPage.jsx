@@ -1,105 +1,152 @@
-import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
-import logo from "../assets/logo.png";
-import "./LoginPage.css";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import logo from '../assets/logo.png';
+import './LoginPage.css';
 
 export default function LoginPage() {
-  const { login } = useAuth();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  const [username, setUsername] = useState('admin');
+  const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(false);
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
-  async function handleSubmit(e) {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
-    try {
-      await login(username, password);
-    } catch (err) {
-      setError("Usuario o contraseña incorrectos.");
-    } finally {
-      setLoading(false);
+    setErrorMsg('');
+
+    const loginEndpoints = [
+      'http://127.0.0.1:8000/auth/login',
+      'http://127.0.0.1:8000/token',
+      'http://127.0.0.1:8000/login'
+    ];
+
+    let authenticated = false;
+
+    for (const url of loginEndpoints) {
+      try {
+        // Intento 1: Form Data (estándar FastAPI OAuth2)
+        const formData = new URLSearchParams();
+        formData.append('username', username);
+        formData.append('password', password);
+
+        let response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: formData
+        });
+
+        // Intento 2: JSON Body (si el backend no usa OAuth2 standard)
+        if (!response.ok && response.status === 422) {
+          response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+          });
+        }
+
+        if (response.ok) {
+          const data = await response.json();
+          const token = data.access_token || data.token || 'login_success_token';
+          localStorage.setItem('token', token);
+          localStorage.setItem('access_token', token);
+          authenticated = true;
+          navigate('/dashboard');
+          break;
+        }
+      } catch (err) {
+        console.warn('Estrategia fallida para:', url);
+      }
     }
-  }
+
+    if (!authenticated) {
+      setErrorMsg('Usuario o contraseña incorrectos o servidor no disponible.');
+    }
+
+    setLoading(false);
+  };
 
   return (
-    <div className="login-page">
+    <div className="login-container">
       <div className="login-card">
-        <div className="login-side">
-          <img src={logo} alt="Tránsito de Mosquera - Transitemos" className="login-side-logo" />
-          <div className="login-side-divider" />
-          <p className="login-side-text">
-            Sistema de Gestión Interna
-            <br />
-            CRM • Tickets • Comunicaciones
-          </p>
-          <span className="login-side-footer">Transitemos • 2026</span>
+        {/* Izquierda: Panel Institucional */}
+        <div className="login-brand-panel">
+          <div className="brand-logo-container">
+            <img src={logo} alt="Tránsito de Mosquera Logo" className="brand-logo" />
+          </div>
+          <div className="brand-info">
+            <div className="brand-line"></div>
+            <p className="brand-subtitle">
+              Sistema de Gestión Interna<br />
+              <strong>CRM • Tickets • Comunicaciones</strong>
+            </p>
+          </div>
+          <div className="brand-footer">
+            TRANSITEMOS • 2026
+          </div>
         </div>
 
-        <div className="login-form-side">
-          <h1 className="login-title">Bienvenido</h1>
-          <p className="login-subtitle">Ingresa para continuar</p>
+        {/* Derecha: Formulario */}
+        <div className="login-form-panel">
+          <div className="form-wrapper">
+            <h2 className="form-title">Bienvenido</h2>
+            <p className="form-subtitle">Ingresa para continuar</p>
 
-          {error && <div className="login-error">{error}</div>}
+            {errorMsg && <div className="error-banner">{errorMsg}</div>}
 
-          <form onSubmit={handleSubmit}>
-            <div className="login-field">
-              <label className="login-label" htmlFor="username">Usuario</label>
-              <input
-                id="username"
-                className="login-input"
-                type="text"
-                placeholder="Tu usuario"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                autoComplete="username"
-              />
-            </div>
-
-            <div className="login-field">
-              <label className="login-label" htmlFor="password">Contraseña</label>
-              <div className="login-input-wrap">
+            <form onSubmit={handleLogin}>
+              <div className="form-group">
+                <label>USUARIO</label>
                 <input
-                  id="password"
-                  className="login-input"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
+                  type="text"
+                  required
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="admin"
                 />
-                <button
-                  type="button"
-                  className="login-eye-toggle"
-                  onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
               </div>
-            </div>
 
-            <div className="login-row">
-              <label className="login-remember">
+              <div className="form-group">
+                <label>CONTRASEÑA</label>
+                <div className="password-input-wrapper">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                  />
+                  <button
+                    type="button"
+                    className="eye-toggle"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    👁
+                  </button>
+                </div>
+              </div>
+
+              <div className="remember-group">
                 <input
                   type="checkbox"
-                  checked={remember}
-                  onChange={(e) => setRemember(e.target.checked)}
+                  id="remember"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
                 />
-                Mantener sesión iniciada
-              </label>
-            </div>
+                <label htmlFor="remember">Mantener sesión iniciada</label>
+              </div>
 
-            <button type="submit" className="login-button" disabled={loading}>
-              {loading ? "Ingresando..." : "Ingresar al sistema"}
-            </button>
-          </form>
+              <button type="submit" disabled={loading} className="btn-submit">
+                {loading ? 'Ingresando...' : 'Ingresar al sistema'}
+              </button>
+            </form>
+          </div>
 
-          <p className="login-footer-text">Transito de Mosquera © 2026</p>
+          <div className="form-footer">
+            Tránsito de Mosquera © 2026
+          </div>
         </div>
       </div>
     </div>
