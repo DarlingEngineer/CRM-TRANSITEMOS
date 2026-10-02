@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from modules.auth.api import router as auth_router
 from modules.tickets.api import router as tickets_router
-from modules.tickets.api import router as metrics_router
+from modules.metrics.api import router as metrics_router
 from core.security import get_current_user
 
 app = FastAPI(title="CRM API")

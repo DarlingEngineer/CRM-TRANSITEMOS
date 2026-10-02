@@ -20,3 +20,11 @@ def test_login_con_usuario_inexistente_devuelve_401(client):
     response = client.post("/auth/login", json={"username": "no_existe", "password": "algo"})
 
     assert response.status_code == 401
+
+def test_bloqueo_tras_intentos_fallidos(client, admin_user):
+    username, _ = admin_user
+    for _ in range(5):
+        client.post("/auth/login", json={"username": username, "password": "incorrecta"})
+
+    response = client.post("/auth/login", json={"username": username, "password": "incorrecta"})
+    assert response.status_code == 403

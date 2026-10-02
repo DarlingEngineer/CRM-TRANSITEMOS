@@ -10,7 +10,7 @@ class MetricsService:
 
     def get_tickets_per_area(self):
         rows = self.repository.tickets_per_area()
-        return [{"area": r.area, "total": r.total} for r in rows]
+        return [{"area": r.name, "total": r.total} for r in rows]
 
     def get_average_response_time(self):
         avg_hours, count = self.repository.average_response_time_hours()

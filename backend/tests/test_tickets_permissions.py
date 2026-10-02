@@ -35,3 +35,16 @@ def test_admin_si_puede_listar_tickets(client, admin_user):
     response = client.get("/tickets/", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 200
+
+
+def test_solicitante_puede_crear_ticket(client, solicitante_user, area_registro):
+    username, password = solicitante_user
+    token = _login(client, username, password)
+
+    response = client.post(
+        "/tickets/",
+        json={"title": "Prueba", "priority": "Alta", "area": "Registro Automotor"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200

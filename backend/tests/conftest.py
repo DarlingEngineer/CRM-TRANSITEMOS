@@ -73,3 +73,12 @@ def solicitante_user(db_session):
     db_session.add(user)
     db_session.commit()
     return "solicitante_test", "Test1234!"
+
+@pytest.fixture()
+def area_registro(db_session):
+    """Crea un área de prueba para los tests que crean tickets."""
+    from modules.tickets.models import Area
+    area = Area(name="Registro Automotor")
+    db_session.add(area)
+    db_session.commit()
+    return area
