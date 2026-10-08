@@ -36,6 +36,7 @@ def create_user(
     return UserResponse.from_user(user)
 
 
+
 @router.get("/users", response_model=list[UserResponse])
 def list_users(
     skip: int = 0,
@@ -50,6 +51,20 @@ def list_users(
 
 @router.patch("/users/{user_id}/deactivate", response_model=UserResponse)
 def deactivate_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(require_roles("admin")),
+):
+    service = UserManagementService(UserRepository(db))
+    try:
+        user = service.deactivate_user(user_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    return UserResponse.from_user(user)
+
+
+@router.patch("/users/{user_id}/reactivate", response_model=UserResponse)
+def reactivate_user(
     user_id: int,
     db: Session = Depends(get_db),
     current_user: dict = Depends(require_roles("admin")),
@@ -75,17 +90,3 @@ def change_role(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     return UserResponse.from_user(user)
-
-
-@router.patch("/users/{user_id}/role", response_model=UserResponse)
-def change_role(
-    user_id: int,
-    data: RoleUpdate,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(require_roles("admin")),
-):
-    service = UserManagementService(UserRepository(db))
-    try:
-        return service.change_role(user_id, data.role)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
