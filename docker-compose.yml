@@ -1,7 +1,6 @@
 services:
   db:
     image: postgres:16
-    container_name: crm_postgres
     restart: unless-stopped
     env_file:
       - ./backend/.env
@@ -14,6 +13,18 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  backend:
+    build: ./backend
+    container_name: crm_backend
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql+psycopg2://crm_user:crm_password@db:5432/crm_db
+      SECRET_KEY: ${SECRET_KEY}
+      CORS_ORIGINS: http://localhost:5173
+    ports:
+      - "8000:8000"
+
 volumes:
   pgdata:
-  

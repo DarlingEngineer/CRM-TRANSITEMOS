@@ -1,7 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Literal
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict
+
 
 class TicketCreate(BaseModel):
     title: str
@@ -9,13 +9,15 @@ class TicketCreate(BaseModel):
     priority: Literal["Alta", "Media", "Baja"]
     area: str
 
+
 class TicketUpdate(BaseModel):
     status: Literal["Abierto", "En proceso", "Resuelto", "Cerrado"]
+
 
 class TicketResponse(BaseModel):
     id: int
     title: str
-    body: str | None
+    body: str
     priority: str
     status: str
     area: str
@@ -23,12 +25,10 @@ class TicketResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-
     model_config = ConfigDict(from_attributes=True)
 
     @classmethod
     def from_ticket(cls, ticket):
-        """Aplana el objeto Ticket, sustituyendo area_id por el nombre real del área."""
         return cls(
             id=ticket.id,
             title=ticket.title,
@@ -40,3 +40,13 @@ class TicketResponse(BaseModel):
             created_at=ticket.created_at,
             updated_at=ticket.updated_at,
         )
+
+
+class TicketHistoryResponse(BaseModel):
+    id: int
+    old_status: str | None
+    new_status: str
+    changed_by_id: int
+    changed_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)

@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from .models import Ticket, Area
+from .models import Ticket, Area, TicketHistory
 
 class TicketRepository:
     def __init__(self, db: Session):
@@ -29,3 +29,22 @@ class TicketRepository:
         self.db.commit()
         self.db.refresh(ticket)
         return ticket
+
+    def log_status_change(self, ticket_id: int, old_status: str | None, new_status: str, changed_by_id: int):
+        entry = TicketHistory(
+            ticket_id=ticket_id,
+            old_status=old_status,
+            new_status=new_status,
+            changed_by_id=changed_by_id,
+    )
+        self.db.add(entry)
+        self.db.commit()
+
+    def get_history(self, ticket_id: int):
+        return (
+            self.db.query(TicketHistory)
+            .filter(TicketHistory.ticket_id == ticket_id)
+            .order_by(TicketHistory.changed_at.asc())
+            .all()
+    )
+    

@@ -4,13 +4,16 @@ from modules.auth.api import router as auth_router
 from modules.tickets.api import router as tickets_router
 from modules.metrics.api import router as metrics_router
 from core.security import get_current_user
+import os
 
 app = FastAPI(title="CRM API")
 
 # Permitir conexiones desde React (CORS)
+cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
