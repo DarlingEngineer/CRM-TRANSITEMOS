@@ -17,7 +17,7 @@ class TicketUpdate(BaseModel):
 class TicketResponse(BaseModel):
     id: int
     title: str
-    body: str
+    body: str | None = None
     priority: str
     status: str
     area: str
