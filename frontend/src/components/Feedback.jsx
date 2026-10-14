@@ -1,4 +1,5 @@
 import React from 'react';
+import { STATUS_BADGES, PRIORITY_BADGES, normalizeStatus } from '../utils/chartTheme';
 
 export function ErrorBanner({ message }) {
   if (!message) return null;
@@ -35,23 +36,12 @@ export function EmptyState({ icon = '📭', message = 'Sin registros' }) {
   );
 }
 
-export const STATUS_COLORS = {
-  'Abierto': { bg: '#ede9fe', text: '#6d28d9' },
-  'En proceso': { bg: '#ffedd5', text: '#c2410c' },
-  'En Proceso': { bg: '#ffedd5', text: '#c2410c' },
-  'Resuelto': { bg: '#d1fae5', text: '#065f46' },
-  'Cerrado': { bg: '#f1f5f9', text: '#475569' },
-};
-
-export const PRIORITY_COLORS = {
-  'Baja': { bg: '#d1fae5', text: '#065f46' },
-  'Media': { bg: '#fef9c3', text: '#854d0e' },
-  'Alta': { bg: '#fee2e2', text: '#b91c1c' },
-  'Urgente': { bg: '#ede9fe', text: '#6d28d9' },
-};
+// Los colores salen de la paleta compartida con las gráficas y el PDF.
+export const STATUS_COLORS = STATUS_BADGES;
+export const PRIORITY_COLORS = PRIORITY_BADGES;
 
 export function StatusBadge({ status }) {
-  const theme = STATUS_COLORS[status] || { bg: '#f1f5f9', text: '#475569' };
+  const theme = STATUS_COLORS[normalizeStatus(status)] || { bg: '#f1f5f9', text: '#475569' };
   return (
     <span style={{ background: theme.bg, color: theme.text, padding: '4px 10px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
       {status}
@@ -60,7 +50,7 @@ export function StatusBadge({ status }) {
 }
 
 export function PriorityBadge({ priority }) {
-  const theme = PRIORITY_COLORS[priority] || { bg: '#d1fae5', text: '#065f46' };
+  const theme = PRIORITY_COLORS[priority] || { bg: '#f1f5f9', text: '#475569' };
   return (
     <span style={{ background: theme.bg, color: theme.text, padding: '4px 10px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
       {priority}

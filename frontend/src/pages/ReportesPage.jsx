@@ -3,7 +3,8 @@ import AppLayout from '../layouts/AppLayout';
 import { apiFetch } from '../apiClient';
 import { ErrorBanner, Loading } from '../components/Feedback';
 import ChartCard from '../components/ChartCard';
-import { buildDetailedCsv, downloadCsv, openPrintableReport } from '../utils/reportExport';
+import { buildDetailedCsv, downloadCsv } from '../utils/reportExport';
+import { SERIES_COLOR, PRIORITY_ORDER, PRIORITY_COLORS, CHART_INK, AXIS_TICK, VALUE_LABEL, TOOLTIP_PROPS } from '../utils/chartTheme';
 import { Area, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, BarChart, Bar, Line, LabelList, ComposedChart } from 'recharts';
 
 const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
@@ -35,7 +36,7 @@ export default function ReportesPage() {
         setTickets(list);
         const counts = {};
         list.forEach((t) => { counts[t.priority] = (counts[t.priority] || 0) + 1; });
-        setPorPrioridad(Object.entries(counts).map(([name, total]) => ({ name, total })));
+        setPorPrioridad(PRIORITY_ORDER.filter((name) => counts[name]).map((name) => ({ name, total: counts[name] })));
       }
       setError('');
     } catch (err) {
@@ -66,7 +67,7 @@ export default function ReportesPage() {
           list = Array.isArray(data) ? data : [];
           const counts = {};
           list.forEach((tk) => { counts[tk.priority] = (counts[tk.priority] || 0) + 1; });
-          prioridad = Object.entries(counts).map(([name, total]) => ({ name, total }));
+          prioridad = PRIORITY_ORDER.filter((name) => counts[name]).map((name) => ({ name, total: counts[name] }));
         }
         if (active) {
           setPorMes(mes);
@@ -87,7 +88,18 @@ export default function ReportesPage() {
 
   const exportData = { tickets, porMes, porArea, porPrioridad, tiempo };
   const exportCsv = () => downloadCsv(`reporte_tickets_${new Date().toISOString().slice(0, 10)}.csv`, buildDetailedCsv(exportData));
-  const exportPdf = () => openPrintableReport(exportData);
+  const [exportingPdf, setExportingPdf] = useState(false);
+  const exportPdf = async () => {
+    setExportingPdf(true);
+    try {
+      const { downloadPdfReport } = await import('../utils/reportPdf');
+      downloadPdfReport(exportData);
+    } catch {
+      setError('No se pudo generar el PDF.');
+    } finally {
+      setExportingPdf(false);
+    }
+  };
 
 
   return (
@@ -95,7 +107,7 @@ export default function ReportesPage() {
       <div style={{ width: '100%', maxWidth: '1320px', margin: '0 auto', boxSizing: 'border-box' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <div>
-            <h1 style={{ fontSize: '1.65rem', fontWeight: 800, color: '#5c7cfa', margin: 0 }}>📈 Reportes y KPIs</h1>
+            <h1 style={{ fontSize: '1.65rem', fontWeight: 800, color: CHART_INK.brand, margin: 0 }}>📈 Reportes y KPIs</h1>
             <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '3px' }}>Métricas generales del sistema de tickets</p>
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
@@ -105,8 +117,8 @@ export default function ReportesPage() {
             <button onClick={exportCsv} style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '8px 15px', borderRadius: '6px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}>
               ⬇️ CSV detallado
             </button>
-            <button onClick={exportPdf} style={{ background: '#0b4f78', color: '#fff', border: 'none', padding: '8px 15px', borderRadius: '6px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}>
-              🖨️ Reporte PDF
+            <button onClick={exportPdf} disabled={exportingPdf || loading} style={{ background: '#0b4f78', color: '#fff', border: 'none', padding: '8px 15px', borderRadius: '6px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}>
+              {exportingPdf ? 'Generando…' : '⬇️ Reporte PDF'}
             </button>
           </div>
         </div>
@@ -126,16 +138,16 @@ export default function ReportesPage() {
                   <ComposedChart data={porMes.map(m => ({ name: `${MESES[m.month - 1]} ${m.year}`, total: m.total }))}>
                     <defs>
                       <linearGradient id="colorMes" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#2563eb" stopOpacity={0.5}/>
-                        <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
+                        <stop offset="5%" stopColor={SERIES_COLOR} stopOpacity={0.22}/>
+                        <stop offset="95%" stopColor={SERIES_COLOR} stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#555' }} />
-                    <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: '#555' }} />
-                    <Tooltip formatter={(value) => [`${value} ticket(s)`, 'Creados']} />
+                    <CartesianGrid vertical={false} stroke={CHART_INK.grid} />
+                    <XAxis dataKey="name" tick={AXIS_TICK} tickLine={false} />
+                    <YAxis allowDecimals={false} tick={AXIS_TICK} tickLine={false} />
+                    <Tooltip {...TOOLTIP_PROPS} formatter={(value) => [`${value} ticket(s)`, 'Creados']} />
                     <Area type="monotone" dataKey="total" stroke="none" fill="url(#colorMes)" />
-                    <Line type="monotone" dataKey="total" stroke="#2563eb" strokeWidth={3} dot={{ r: 4, fill: '#2563eb' }} activeDot={{ r: 6 }} />
+                    <Line type="monotone" dataKey="total" stroke={SERIES_COLOR} strokeWidth={2} dot={{ r: 4, fill: SERIES_COLOR, stroke: '#fff', strokeWidth: 2 }} activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2 }} />
                   </ComposedChart>
                 </ResponsiveContainer>
               )}
@@ -148,15 +160,12 @@ export default function ReportesPage() {
               ) : (
                 <ResponsiveContainer width="100%" height={190}>
                   <BarChart data={[...porArea].sort((a,b) => b.total - a.total)} layout="vertical" margin={{ left: 60, right: 24 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 12, fill: '#555' }} />
-                    <YAxis type="category" dataKey="area" tick={{ fontSize: 12, fill: '#555' }} width={90} />
-                    <Tooltip formatter={(value) => [`${value} ticket(s)`, 'Total']} />
-                    <Bar dataKey="total" radius={[0, 4, 4, 0]} barSize={16}>
-                      {[...porArea].sort((a,b) => b.total - a.total).map((entry, idx) => (
-                        <Cell key={entry.area} fill={['#0b4f78', '#1d78c8', '#38bdf8', '#a5d8ff', '#0ea5e9', '#7dd3fc', '#bae6fd', '#e0f2fe'][idx % 8]} />
-                      ))}
-                      <LabelList dataKey="total" position="right" style={{ fontSize: 11, fill: '#333', fontWeight: 700 }} />
+                    <CartesianGrid horizontal={false} stroke={CHART_INK.grid} />
+                    <XAxis type="number" allowDecimals={false} tick={AXIS_TICK} tickLine={false} />
+                    <YAxis type="category" dataKey="area" tick={AXIS_TICK} tickLine={false} width={90} />
+                    <Tooltip {...TOOLTIP_PROPS} formatter={(value) => [`${value} ticket(s)`, 'Total']} />
+                    <Bar dataKey="total" fill={SERIES_COLOR} radius={[0, 4, 4, 0]} barSize={16}>
+                      <LabelList dataKey="total" position="right" style={VALUE_LABEL} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -170,15 +179,15 @@ export default function ReportesPage() {
               ) : (
                 <ResponsiveContainer width="100%" height={190}>
                   <BarChart data={porPrioridad} margin={{ top: 16, right: 8, left: -18 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#555' }} />
-                    <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: '#555' }} />
-                    <Tooltip formatter={(value) => [`${value} ticket(s)`, 'Total']} />
-                    <Bar dataKey="total" radius={[6, 6, 0, 0]} maxBarSize={48}>
-                      {porPrioridad.map((entry, idx) => (
-                        <Cell key={entry.name} fill={['#0b4f78', '#1d78c8', '#38bdf8', '#a5d8ff'][idx % 4]} />
+                    <CartesianGrid vertical={false} stroke={CHART_INK.grid} />
+                    <XAxis dataKey="name" tick={AXIS_TICK} tickLine={false} />
+                    <YAxis allowDecimals={false} tick={AXIS_TICK} tickLine={false} />
+                    <Tooltip {...TOOLTIP_PROPS} formatter={(value) => [`${value} ticket(s)`, 'Total']} />
+                    <Bar dataKey="total" radius={[4, 4, 0, 0]} maxBarSize={44}>
+                      {porPrioridad.map((entry) => (
+                        <Cell key={entry.name} fill={PRIORITY_COLORS[entry.name] || SERIES_COLOR} />
                       ))}
-                      <LabelList dataKey="total" position="top" style={{ fontSize: 11, fill: '#333', fontWeight: 700 }} />
+                      <LabelList dataKey="total" position="top" style={VALUE_LABEL} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -196,9 +205,9 @@ export default function ReportesPage() {
                 const pct = horas != null ? Math.min((horas / 24) * 100, 100) : 0;
                 return (
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ width: "130px", height: "130px", borderRadius: '50%', background: `conic-gradient(#2563eb ${pct}%, #e2e8f0 ${pct}%)`, display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0 auto' }}>
+                    <div style={{ width: "130px", height: "130px", borderRadius: '50%', background: `conic-gradient(${SERIES_COLOR} ${pct}%, ${CHART_INK.track} ${pct}%)`, display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0 auto' }}>
                       <div style={{ width: '104px', height: '104px', borderRadius: '50%', background: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                        <span style={{ fontSize: '1.6rem', fontWeight: 800, color: '#2563eb' }}>{horas != null ? `${horas.toFixed(1)}` : 'N/A'}</span>
+                        <span style={{ fontSize: '1.6rem', fontWeight: 800, color: CHART_INK.text }}>{horas != null ? `${horas.toFixed(1)}` : 'N/A'}</span>
                         <span style={{ fontSize: '0.7rem', color: '#64748b' }}>horas</span>
                       </div>
                     </div>
@@ -212,19 +221,3 @@ export default function ReportesPage() {
     </AppLayout>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -4,8 +4,9 @@ import AppLayout from '../layouts/AppLayout';
 import { apiFetch } from '../apiClient';
 import { ErrorBanner, Loading, EmptyState, StatusBadge, PriorityBadge } from '../components/Feedback';
 import ChartCard from '../components/ChartCard';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, LabelList } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, LabelList, CartesianGrid } from 'recharts';
 import { motion } from 'framer-motion';
+import { STATUS_COLORS, PRIORITY_COLORS, SERIES_COLOR, CHART_INK, AXIS_TICK, VALUE_LABEL, TOOLTIP_PROPS } from '../utils/chartTheme';
 
 export default function DashboardPage() {
   const [tickets, setTickets] = useState([]);
@@ -124,11 +125,11 @@ export default function DashboardPage() {
           <>
             {/* TARJETAS KPI FLUIDAS */}
             <div className="grid-kpis" style={{ marginBottom: '20px' }}>
-              <KpiCard title="TOTAL TICKETS" count={totalTickets} color="#2563eb" hint="Registrados en el sistema" onClick={() => navigate('/tickets')} />
-              <KpiCard title="ABIERTOS" count={abiertos} color="#0ea5e9" hint="Pendientes de atención" onClick={() => navigate('/tickets')} />
-              <KpiCard title="EN PROCESO" count={enProceso} color="#f59e0b" hint="En gestión actualmente" onClick={() => navigate('/tickets')} />
-              <KpiCard title="RESUELTOS" count={resueltos} color="#16a34a" hint="Atendidos correctamente" onClick={() => navigate('/tickets')} />
-              <KpiCard title="CERRADOS" count={cerrados} color="#64748b" hint="Finalizados y archivados" onClick={() => navigate('/tickets')} />
+              <KpiCard title="TOTAL TICKETS" count={totalTickets} color={CHART_INK.brand} hint="Registrados en el sistema" onClick={() => navigate('/tickets')} />
+              <KpiCard title="ABIERTOS" count={abiertos} color={STATUS_COLORS.Abierto} hint="Pendientes de atención" onClick={() => navigate('/tickets')} />
+              <KpiCard title="EN PROCESO" count={enProceso} color={STATUS_COLORS['En proceso']} hint="En gestión actualmente" onClick={() => navigate('/tickets')} />
+              <KpiCard title="RESUELTOS" count={resueltos} color={STATUS_COLORS.Resuelto} hint="Atendidos correctamente" onClick={() => navigate('/tickets')} />
+              <KpiCard title="CERRADOS" count={cerrados} color={STATUS_COLORS.Cerrado} hint="Finalizados y archivados" onClick={() => navigate('/tickets')} />
             </div>
 
             {/* PANELES DE DIBUJO */}
@@ -138,20 +139,20 @@ export default function DashboardPage() {
               <ChartCard title="Distribución por estado" description="Tickets agrupados según su estado actual en el flujo de atención.">
                 <ResponsiveContainer width="100%" height={190}>
                   <PieChart>
-                    <Pie data={[{ name: 'Abiertos', value: abiertos }, { name: 'En proceso', value: enProceso }, { name: 'Resueltos', value: resueltos }, { name: 'Cerrados', value: cerrados }]} dataKey="value" nameKey="name" innerRadius={44} outerRadius={74} paddingAngle={3} stroke="#fff" strokeWidth={2}>
-                      <Cell fill="#2563eb" />
-                      <Cell fill="#f59e0b" />
-                      <Cell fill="#16a34a" />
-                      <Cell fill="#94a3b8" />
+                    <Pie data={[{ name: 'Abiertos', value: abiertos }, { name: 'En proceso', value: enProceso }, { name: 'Resueltos', value: resueltos }, { name: 'Cerrados', value: cerrados }]} dataKey="value" nameKey="name" innerRadius={44} outerRadius={74} paddingAngle={2} cornerRadius={4} stroke="#fff" strokeWidth={2}>
+                      <Cell fill={STATUS_COLORS.Abierto} />
+                      <Cell fill={STATUS_COLORS['En proceso']} />
+                      <Cell fill={STATUS_COLORS.Resuelto} />
+                      <Cell fill={STATUS_COLORS.Cerrado} />
                     </Pie>
-                    <Tooltip formatter={(value, name) => [`${value} ticket(s)`, name]} />
+                    <Tooltip {...TOOLTIP_PROPS} formatter={(value, name) => [`${value} ticket(s)`, name]} />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="chart-legend">
-                  <span><i style={{ background: '#2563eb' }} />Abiertos {abiertos}</span>
-                  <span><i style={{ background: '#f59e0b' }} />En proceso {enProceso}</span>
-                  <span><i style={{ background: '#16a34a' }} />Resueltos {resueltos}</span>
-                  <span><i style={{ background: '#94a3b8' }} />Cerrados {cerrados}</span>
+                  <span><i style={{ background: STATUS_COLORS.Abierto }} />Abiertos {abiertos}</span>
+                  <span><i style={{ background: STATUS_COLORS['En proceso'] }} />En proceso {enProceso}</span>
+                  <span><i style={{ background: STATUS_COLORS.Resuelto }} />Resueltos {resueltos}</span>
+                  <span><i style={{ background: STATUS_COLORS.Cerrado }} />Cerrados {cerrados}</span>
                 </div>
               </ChartCard>
 
@@ -159,15 +160,16 @@ export default function DashboardPage() {
               <ChartCard title="Tickets por prioridad" description="Volumen de solicitudes según el nivel de prioridad asignado.">
                 <ResponsiveContainer width="100%" height={190}>
                   <BarChart data={[{ name: 'Baja', total: baja }, { name: 'Media', total: media }, { name: 'Alta', total: alta }, { name: 'Urgente', total: urgente }]} margin={{ top: 16, right: 8, left: -18, bottom: 0 }}>
-                    <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                    <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                    <Tooltip formatter={(value) => [`${value} ticket(s)`, 'Total']} />
-                    <Bar dataKey="total" radius={[6, 6, 0, 0]} maxBarSize={48}>
-                      <Cell fill="#f59e0b" />
-                      <Cell fill="#fbbf24" />
-                      <Cell fill="#f97316" />
-                      <Cell fill="#ef4444" />
-                      <LabelList dataKey="total" position="top" style={{ fontSize: 11, fill: '#475569', fontWeight: 700 }} />
+                    <CartesianGrid vertical={false} stroke={CHART_INK.grid} />
+                    <XAxis dataKey="name" tick={AXIS_TICK} axisLine={{ stroke: CHART_INK.axis }} tickLine={false} />
+                    <YAxis allowDecimals={false} tick={AXIS_TICK} axisLine={false} tickLine={false} />
+                    <Tooltip {...TOOLTIP_PROPS} formatter={(value) => [`${value} ticket(s)`, 'Total']} />
+                    <Bar dataKey="total" radius={[4, 4, 0, 0]} maxBarSize={44}>
+                      <Cell fill={PRIORITY_COLORS.Baja} />
+                      <Cell fill={PRIORITY_COLORS.Media} />
+                      <Cell fill={PRIORITY_COLORS.Alta} />
+                      <Cell fill={PRIORITY_COLORS.Urgente} />
+                      <LabelList dataKey="total" position="top" style={VALUE_LABEL} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -179,12 +181,13 @@ export default function DashboardPage() {
                   <div style={{ fontSize: '0.82rem', color: '#64748b', textAlign: 'center' }}>Sin áreas registradas</div>
                 ) : (
                   <ResponsiveContainer width="100%" height={190}>
-                    <BarChart layout="vertical" data={Object.entries(areasMap).map(([area, count]) => ({ name: area, total: count }))} margin={{ left: 10, right: 24, top: 5, bottom: 5 }}>
-                      <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
-                      <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 10 }} />
-                      <Tooltip formatter={(value) => [`${value} ticket(s)`, 'Total']} />
-                      <Bar dataKey="total" fill="#0b6efd" radius={[0, 4, 4, 0]} barSize={14}>
-                        <LabelList dataKey="total" position="right" style={{ fontSize: 11, fill: '#475569', fontWeight: 700 }} />
+                    <BarChart layout="vertical" data={Object.entries(areasMap).map(([area, count]) => ({ name: area, total: count })).sort((a, b) => b.total - a.total)} margin={{ left: 10, right: 24, top: 5, bottom: 5 }}>
+                      <CartesianGrid horizontal={false} stroke={CHART_INK.grid} />
+                      <XAxis type="number" allowDecimals={false} tick={AXIS_TICK} axisLine={false} tickLine={false} />
+                      <YAxis type="category" dataKey="name" width={100} tick={AXIS_TICK} axisLine={{ stroke: CHART_INK.axis }} tickLine={false} />
+                      <Tooltip {...TOOLTIP_PROPS} formatter={(value) => [`${value} ticket(s)`, 'Total']} />
+                      <Bar dataKey="total" fill={SERIES_COLOR} radius={[0, 4, 4, 0]} barSize={14}>
+                        <LabelList dataKey="total" position="right" style={VALUE_LABEL} />
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
@@ -245,7 +248,7 @@ function KpiCard({ title, count, color, hint, onClick }) {
       onClick={onClick}
       style={{ background: 'var(--card-bg, #ffffff)', padding: '16px 12px 14px', borderRadius: '10px', borderTop: `3px solid ${color}`, borderLeft: '1px solid #e2e8f0', borderRight: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.03)', boxSizing: 'border-box', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '120px' }}>
       <div style={{ fontSize: '0.68rem', fontWeight: 800, color: '#4b5563', letterSpacing: '0.5px' }}>{title}</div>
-      <div style={{ fontSize: '1.9rem', fontWeight: 800, color: color, margin: '4px 0 2px', lineHeight: 1.1 }}>{count}</div>
+      <div style={{ fontSize: '1.9rem', fontWeight: 800, color: CHART_INK.text, margin: '4px 0 2px', lineHeight: 1.1 }}>{count}</div>
       {hint && <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600 }}>{hint}</div>}
       <div style={{ fontSize: '0.72rem', color: '#2563eb', fontWeight: 600, marginTop: '6px' }}>Ver detalles →</div>
     </motion.div>
