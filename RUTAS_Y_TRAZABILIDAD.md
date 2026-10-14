@@ -50,3 +50,9 @@
 ## Estado de verificación
 - Backend: 10/10 tests pytest pasan; login, refresh y /areas responden 200.
 - Frontend: `vite build` OK; `vitest run` 4/4 tests pasan.
+
+## Cambios realizados (2026-10-08)
+1. **Área "General" eliminada**: nueva migración `b7f1c2d3e4a5_eliminar_area_general.py` (borra los tickets asignados a "General" y el área). En el frontend se quitaron los respaldos `General` (formulario de ticket y listado/detalle de tickets ahora usan "Sin área").
+2. **Campo de descripción de ticket**: la etiqueta "DESCRIPCIÓN / CUERPO" del formulario pasó a llamarse solo "DESCRIPCIÓN".
+3. **Dashboard y Reportes**: nuevo componente `ChartCard` (título + descripción por gráfico), descripciones en los KPIs, etiquetas de valor y tooltips con unidades; layout centrado (`max-width 1320px`) y grillas más proporcionales.
+

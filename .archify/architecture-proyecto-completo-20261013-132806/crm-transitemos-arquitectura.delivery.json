@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "48ee844d-548b-42aa-a075-1f8220598cdb",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\.archify\\architecture-proyecto-completo-20261013-132806\\candidate.json",
+  "output": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\.archify\\architecture-proyecto-completo-20261013-132806\\crm-transitemos-arquitectura.html",
+  "specification": {
+    "sha256": "42b89fc977ea3a68649f49b2cd6ecad8f5804b512b61ab024f873bd630770743",
+    "bytes": 36350
+  },
+  "artifact": {
+    "sha256": "5b3f47853983ddc35fcad6f36457d9362228664202ad0dc6bfa13d1ec7e68809",
+    "bytes": 780289
+  }
+}

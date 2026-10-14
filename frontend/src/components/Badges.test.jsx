@@ -7,7 +7,7 @@ describe('Badges', () => {
     render(<StatusBadge status="Abierto" />);
     const el = screen.getByText('Abierto');
     expect(el).toBeInTheDocument();
-    expect(el).toHaveStyle({ background: '#7c3aed' });
+    expect(el).toHaveStyle({ background: '#ede9fe' });
   });
 
   it('PriorityBadge muestra la prioridad', () => {
@@ -17,7 +17,7 @@ describe('Badges', () => {
 
   it('StatusBadge desconocido usa color gris', () => {
     render(<StatusBadge status="Otro" />);
-    expect(screen.getByText('Otro')).toHaveStyle({ background: '#64748b' });
+    expect(screen.getByText('Otro')).toHaveStyle({ background: '#f1f5f9' });
   });
 });
 

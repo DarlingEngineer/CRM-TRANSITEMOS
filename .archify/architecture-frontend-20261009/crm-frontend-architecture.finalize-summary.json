@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "fail",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\.archify\\architecture-frontend-20261009\\candidate.json",
+    "sha256": "c9311e54c9dda9be4241c1eab337bd6dfae72002268e5a2e3d1e866edd2f4a56",
+    "bytes": 34813
+  },
+  "artifact": {
+    "path": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\.archify\\architecture-frontend-20261009\\crm-frontend-architecture.html",
+    "sha256": "5bdf60c3b7914b42860c93c92810bde16b1198e85ee8a313331514380ead58c2",
+    "bytes": 770667
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "fail"
+  },
+  "failedStage": "browser-check",
+  "diagnostics": [
+    {
+      "code": "viewer/browser-check-runtime",
+      "severity": "error",
+      "message": "browser-check could not complete its Chrome inspection.",
+      "subject": {
+        "artifact": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\.archify\\architecture-frontend-20261009\\crm-frontend-architecture.html"
+      },
+      "evidence": {
+        "reason": "Chrome DevTools read pipe failed: stream ended\nChrome process: still running.\nChrome transport: Node v24.19.0, libuv 1.52.1, win32; pid=37372, exitCode=null, signalCode=null.\nChrome read pipe: readable=false, ended=true, destroyed=false, receivedBytes=0, messages=0, bufferedBytes=0.\nChrome write pipe: writable=false, ended=true, destroyed=false, completedWrites=1, writtenBytes=50, bufferedBytes=0."
+      },
+      "supportedFixes": [
+        "resolve the reported Chrome inspection error, then rerun browser-check"
+      ]
+    }
+  ],
+  "diagnosticSummary": {
+    "total": 1,
+    "shown": 1,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\.archify\\architecture-frontend-20261009\\crm-frontend-architecture.finalize.json",
+    "summaryReceipt": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\.archify\\architecture-frontend-20261009\\crm-frontend-architecture.finalize-summary.json",
+    "browserCheckReceipt": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\.archify\\architecture-frontend-20261009\\crm-frontend-architecture.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.0.1",
+    "availableVersion": "3.0.1",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-09T20:18:12.929Z",
+    "source": "network",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 1829
+}

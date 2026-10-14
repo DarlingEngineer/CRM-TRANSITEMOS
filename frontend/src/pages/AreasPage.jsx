@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import AppLayout from '../layouts/AppLayout';
 import { apiFetch } from '../apiClient';
 import { ErrorBanner, Loading } from '../components/Feedback';
@@ -11,20 +11,35 @@ export default function AreasPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => { fetchAreas(); }, []);
-
-  const fetchAreas = async () => {
-    setLoading(true);
+  const fetchAreas = useCallback(async () => {
     try {
       const res = await apiFetch('/areas/');
       if (!res.ok) throw new Error('No se pudieron cargar las áreas.');
       setAreas(await res.json());
+      setError('');
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await apiFetch('/areas/');
+        if (!res.ok) throw new Error('No se pudieron cargar las áreas.');
+        const data = await res.json();
+        if (active) { setAreas(data); setError(''); }
+      } catch (err) {
+        if (active) setError(err.message);
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => { active = false; };
+  }, []);
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -70,6 +85,7 @@ export default function AreasPage() {
         </form>
 
         {loading ? <Loading /> : (
+          <div className="table-wrap">
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
             <thead>
               <tr style={{ borderBottom: '2px solid #e9ecef', textAlign: 'left', color: '#495057' }}>
@@ -90,6 +106,7 @@ export default function AreasPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </AppLayout>

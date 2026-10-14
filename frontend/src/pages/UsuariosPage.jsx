@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import AppLayout from '../layouts/AppLayout';
 import { apiFetch } from '../apiClient';
 import { ErrorBanner, Loading } from '../components/Feedback';
@@ -12,27 +12,42 @@ export default function UsuariosPage() {
   const [form, setForm] = useState({ username: '', password: '', role: 'solicitante' });
   const [rolesDisponibles, setRolesDisponibles] = useState([]);
 
-  useEffect(() => { fetchUsuarios(); fetchRoles(); }, []);
-
-  const fetchRoles = async () => {
-    try {
-      const res = await apiFetch('/auth/roles');
-      if (res.ok) setRolesDisponibles(await res.json());
-    } catch { /* silencio */ }
-  };
-
-  const fetchUsuarios = async () => {
-    setLoading(true);
+  const fetchUsuarios = useCallback(async () => {
     try {
       const res = await apiFetch('/auth/users');
       if (!res.ok) throw new Error('No se pudieron cargar los usuarios.');
       setUsuarios(await res.json());
+      setError('');
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await apiFetch('/auth/users');
+        if (!res.ok) throw new Error('No se pudieron cargar los usuarios.');
+        const data = await res.json();
+        if (active) { setUsuarios(data); setError(''); }
+      } catch (err) {
+        if (active) setError(err.message);
+      } finally {
+        if (active) setLoading(false);
+      }
+      try {
+        const res = await apiFetch('/auth/roles');
+        if (res.ok) {
+          const roles = await res.json();
+          if (active) setRolesDisponibles(roles);
+        }
+      } catch { /* silencio */ }
+    })();
+    return () => { active = false; };
+  }, []);
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -121,6 +136,7 @@ export default function UsuariosPage() {
         </form>
 
         {loading ? <Loading /> : (
+          <div className="table-wrap">
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
             <thead>
               <tr style={{ borderBottom: '2px solid #e9ecef', textAlign: 'left', color: '#495057' }}>
@@ -161,6 +177,7 @@ export default function UsuariosPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </AppLayout>

@@ -45,3 +45,9 @@ Ver detalle completo en `RUTAS_Y_TRAZABILIDAD.md`.
 - Docker: `Dockerfile` backend (Python), `frontend/Dockerfile` (build + nginx con proxy a backend), compose con db+backend+frontend.
 - Tests nuevos: refresh token y CRUD áreas (13 passed).
 - `README.md` con instrucciones completas.
+
+### Ajustes de interfaz y área General (2026-10-08)
+- Se eliminó el área "General" (artefacto del backfill de `0e9329aceeac`): migración `b7f1c2d3e4a5` borra el área y sus tickets asociados; el frontend ya no usa "General" como respaldo (usa "Sin área").
+- Etiqueta del campo de descripción del ticket: "DESCRIPCIÓN / CUERPO" → "DESCRIPCIÓN".
+- Gráficos de Dashboard/Reportes con descripción propia (`ChartCard`), etiquetas de valor y tooltips más claros; layout más proporcionado.
+

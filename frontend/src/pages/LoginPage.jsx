@@ -41,11 +41,7 @@ export default function LoginPage() {
       await login(username, password);
       navigate('/dashboard');
     } catch (err) {
-      if (err?.response?.status === 401 || err?.response?.status === 403) {
-        setErrorMsg(err.response.data?.detail || 'Usuario o contraseña incorrectos.');
-      } else {
-        setErrorMsg('No se pudo conectar con el servidor.');
-      }
+      setErrorMsg(err?.message || 'No se pudo conectar con el servidor.');
     }
 
     setLoading(false);

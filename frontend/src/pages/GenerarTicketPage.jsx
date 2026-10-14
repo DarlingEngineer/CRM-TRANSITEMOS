@@ -8,8 +8,8 @@ import { useToast } from '../context/ToastContext';
 export default function GenerarTicketPage() {
   const { showToast } = useToast() || {};
   const navigate = useNavigate();
-  const [users, setUsers] = useState([]);
-  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [areas, setAreas] = useState([]);
+  const [loadingAreas, setLoadingAreas] = useState(true);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -23,27 +23,27 @@ export default function GenerarTicketPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchAreas();
-  }, []);
-
-  const fetchAreas = async () => {
-    setLoadingUsers(true);
-    try {
-      const res = await apiFetch('/areas/');
-
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          setUsers(data);
-          setFormData(prev => ({ ...prev, area: data[0].name }));
+    let active = true;
+    (async () => {
+      try {
+        const res = await apiFetch('/areas/');
+        if (res.ok) {
+          const data = await res.json();
+          if (active && Array.isArray(data) && data.length > 0) {
+            setAreas(data);
+            setFormData(prev => ({ ...prev, area: data[0].name }));
+          }
         }
+        if (active) setError('');
+      } catch (err) {
+        if (active) setError('No se pudieron cargar las áreas.');
+        console.error("Error al cargar áreas de la API:", err);
+      } finally {
+        if (active) setLoadingAreas(false);
       }
-    } catch (err) {
-      console.error("Error al cargar áreas de la API:", err);
-    } finally {
-      setLoadingUsers(false);
-    }
-  };
+    })();
+    return () => { active = false; };
+  }, []);
 
   const handleChange = (e) => {
     setFormData({
@@ -135,14 +135,14 @@ export default function GenerarTicketPage() {
                 name="area" 
                 value={formData.area} 
                 onChange={handleChange} 
-                disabled={loadingUsers}
+                disabled={loadingAreas}
                 style={{ ...inputStyle, cursor: 'pointer' }}>
-                {loadingUsers ? (
+                {loadingAreas ? (
                   <option value="">Cargando áreas...</option>
-                ) : users.length === 0 ? (
-                  <option value="General">Sin áreas en API</option>
+                ) : areas.length === 0 ? (
+                  <option value="">Sin áreas disponibles</option>
                 ) : (
-                  users.map((u, index) => (
+                  areas.map((u, index) => (
                     <option key={u.id || index} value={u.name}>
                       {u.name}
                     </option>
@@ -163,7 +163,7 @@ export default function GenerarTicketPage() {
           </div>
 
           <div>
-            <label style={labelStyle}>DESCRIPCIÓN / CUERPO</label>
+            <label style={labelStyle}>DESCRIPCIÓN</label>
             <textarea 
               name="body" 
               rows="4" 

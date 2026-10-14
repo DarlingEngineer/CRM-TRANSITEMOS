@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 export default function AdminRoute() {
   const { token, role } = useAuth() || {};
 
-  if (!token && !localStorage.getItem("token")) {
+  if (!token && !localStorage.getItem("access_token")) {
     return <Navigate to="/login" replace />;
   }
 

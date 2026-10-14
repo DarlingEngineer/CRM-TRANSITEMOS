@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '../layouts/AppLayout';
 import { apiFetch } from '../apiClient';
@@ -24,32 +24,43 @@ export default function EstadoTicketsPage() {
   const PAGE_SIZE = 10;
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchTickets();
-    fetchAreas();
-  }, []);
-
-  const fetchAreas = async () => {
-    try {
-      const res = await apiFetch('/areas/');
-      if (res.ok) setAreas(await res.json());
-    } catch { /* silencio */ }
-  };
-
-  const fetchTickets = async () => {
-    setLoading(true);
-    setError('');
+  const fetchTickets = useCallback(async () => {
     try {
       const res = await apiFetch('/tickets/?limit=100');
       if (!res.ok) throw new Error('No se pudo conectar con el servidor.');
       const data = await res.json();
       setTickets(Array.isArray(data) ? data : []);
+      setError('');
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await apiFetch('/tickets/?limit=100');
+        if (!res.ok) throw new Error('No se pudo conectar con el servidor.');
+        const data = await res.json();
+        if (active) { setTickets(Array.isArray(data) ? data : []); setError(''); }
+      } catch (err) {
+        if (active) setError(err.message);
+      } finally {
+        if (active) setLoading(false);
+      }
+      try {
+        const res = await apiFetch('/areas/');
+        if (res.ok) {
+          const data = await res.json();
+          if (active) setAreas(data);
+        }
+      } catch { /* silencio */ }
+    })();
+    return () => { active = false; };
+  }, []);
 
   // Función para cambiar el estado enviando actualización completa a la API
   const handleStatusChange = async (ticket, newStatus) => {
@@ -57,25 +68,11 @@ export default function EstadoTicketsPage() {
     setUpdatingId(ticket.id);
     setError('');
     try {
-      // Intentamos primero con PUT en el backend
       const res = await apiFetch(`/tickets/${ticket.id}`, {
         method: 'PUT',
-        body: {
-          title: ticket.title,
-          body: ticket.body || 'Sin descripción',
-          priority: ticket.priority,
-          status: newStatus,
-          area: ticket.area
-        }
+        body: { status: newStatus },
       });
-
-      if (!res.ok) {
-        // Alternativa con PATCH si PUT no está habilitado
-        await apiFetch(`/tickets/${ticket.id}`, {
-          method: 'PATCH',
-          body: { status: newStatus }
-        });
-      }
+      if (!res.ok) throw new Error('No se pudo actualizar el estado.');
 
       // Actualizamos el estado local para reflejar el cambio en tiempo real
       setTickets(prev => prev.map(t => t.id === ticket.id ? { ...t, status: newStatus } : t));
@@ -206,6 +203,7 @@ export default function EstadoTicketsPage() {
           {loading ? (
             <Loading />
           ) : (
+            <div className="table-wrap">
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid #e9ecef', textAlign: 'left', color: '#495057', fontSize: '0.8rem', fontWeight: 700 }}>
@@ -228,7 +226,7 @@ export default function EstadoTicketsPage() {
                     <tr key={t.id} style={{ borderBottom: '1px solid #f1f3f5', cursor: 'pointer' }} onClick={() => setSelectedTicket(t)}>
                       <td style={{ padding: '12px 8px', fontWeight: 700, color: '#0d4b75' }}>#{t.id}</td>
                       <td style={{ padding: '12px 8px', fontWeight: 600, color: '#212529' }}>{t.title}</td>
-                      <td style={{ padding: '12px 8px', color: '#6c757d' }}>{t.area || 'General'}</td>
+                      <td style={{ padding: '12px 8px', color: '#6c757d' }}>{t.area || 'Sin área'}</td>
                       <td style={{ padding: '12px 8px' }}><PriorityBadge priority={t.priority} /></td>
                       <td style={{ padding: '12px 8px' }}><StatusBadge status={t.status} /></td>
                       <td style={{ padding: '12px 8px', color: '#6c757d' }}>
@@ -262,7 +260,8 @@ export default function EstadoTicketsPage() {
                   ))
                 )}
               </tbody>
-            </table>
+              </table>
+            </div>
           )}
 
           {/* Paginación */}
@@ -284,7 +283,7 @@ export default function EstadoTicketsPage() {
             <h2 style={{ marginTop: 0, color: '#0b4f78' }}>Ticket #{selectedTicket.id}</h2>
             <p><strong>Título:</strong> {selectedTicket.title}</p>
             <p><strong>Descripción:</strong> {selectedTicket.body || 'Sin descripción'}</p>
-            <p><strong>Área:</strong> {selectedTicket.area || 'General'}</p>
+            <p><strong>Área:</strong> {selectedTicket.area || 'Sin área'}</p>
             <p><strong>Prioridad:</strong> {selectedTicket.priority}</p>
             <p><strong>Estado:</strong> {selectedTicket.status}</p>
             <p><strong>Creado:</strong> {selectedTicket.created_at ? new Date(selectedTicket.created_at).toLocaleString() : 'N/A'}</p>

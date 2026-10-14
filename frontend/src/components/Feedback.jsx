@@ -53,7 +53,7 @@ export const PRIORITY_COLORS = {
 export function StatusBadge({ status }) {
   const theme = STATUS_COLORS[status] || { bg: '#f1f5f9', text: '#475569' };
   return (
-    <span style={{ background: theme.bg, color: theme.text, padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600 }}>
+    <span style={{ background: theme.bg, color: theme.text, padding: '4px 10px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
       {status}
     </span>
   );
@@ -62,7 +62,7 @@ export function StatusBadge({ status }) {
 export function PriorityBadge({ priority }) {
   const theme = PRIORITY_COLORS[priority] || { bg: '#d1fae5', text: '#065f46' };
   return (
-    <span style={{ background: theme.bg, color: theme.text, padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600 }}>
+    <span style={{ background: theme.bg, color: theme.text, padding: '4px 10px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
       {priority}
     </span>
   );

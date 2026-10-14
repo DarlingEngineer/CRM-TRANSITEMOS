@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import AppLayout from '../layouts/AppLayout';
 import { apiFetch } from '../apiClient';
 import { ErrorBanner, Loading } from '../components/Feedback';
@@ -12,20 +12,35 @@ export default function RolesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => { fetchRoles(); }, []);
-
-  const fetchRoles = async () => {
-    setLoading(true);
+  const fetchRoles = useCallback(async () => {
     try {
       const res = await apiFetch('/auth/roles');
       if (!res.ok) throw new Error('No se pudieron cargar los roles.');
       setRoles(await res.json());
+      setError('');
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await apiFetch('/auth/roles');
+        if (!res.ok) throw new Error('No se pudieron cargar los roles.');
+        const data = await res.json();
+        if (active) { setRoles(data); setError(''); }
+      } catch (err) {
+        if (active) setError(err.message);
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => { active = false; };
+  }, []);
 
   const handleDelete = async (r) => {
     if (!window.confirm(`¿Eliminar el rol "${r.name}"?`)) return;
@@ -76,6 +91,7 @@ export default function RolesPage() {
         </form>
 
         {loading ? <Loading /> : (
+          <div className="table-wrap">
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
             <thead>
               <tr style={{ borderBottom: '2px solid #e9ecef', textAlign: 'left', color: '#495057' }}>
@@ -98,6 +114,7 @@ export default function RolesPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </AppLayout>

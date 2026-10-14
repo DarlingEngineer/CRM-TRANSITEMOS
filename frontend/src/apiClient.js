@@ -11,7 +11,6 @@ async function tryRefreshToken() {
     });
     if (!res.ok) return false;
     const data = await res.json();
-    localStorage.setItem('token', data.access_token);
     localStorage.setItem('access_token', data.access_token);
     localStorage.setItem('refresh_token', data.refresh_token);
     return true;
@@ -21,7 +20,7 @@ async function tryRefreshToken() {
 }
 
 export async function apiFetch(path, { method = 'GET', body, headers = {}, ...rest } = {}, _retried = false) {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('access_token');
   const res = await fetch(`${API_URL}${path}`, {
     method,
     headers: {
@@ -42,7 +41,6 @@ export async function apiFetch(path, { method = 'GET', body, headers = {}, ...re
 
   // Sesión expirada o inválida: limpiar y volver al login
   if (res.status === 401 && !path.startsWith('/auth/login')) {
-    localStorage.removeItem('token');
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     window.location.href = '/login';

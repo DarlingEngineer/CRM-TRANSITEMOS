@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '../layouts/AppLayout';
 import { apiFetch } from '../apiClient';
 import { ErrorBanner, Loading, EmptyState, StatusBadge, PriorityBadge } from '../components/Feedback';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import ChartCard from '../components/ChartCard';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, LabelList } from 'recharts';
 import { motion } from 'framer-motion';
 
 export default function DashboardPage() {
@@ -12,24 +13,36 @@ export default function DashboardPage() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchTickets();
-  }, []);
-
-  const fetchTickets = async () => {
-    setLoading(true);
-    setError('');
+  const fetchTickets = useCallback(async () => {
     try {
       const res = await apiFetch('/tickets/?limit=100');
-      if (!res.ok) throw new Error('Request failed with status code ' + res.status);
+      if (!res.ok) throw new Error('No se pudo conectar con el servidor.');
       const data = await res.json();
       setTickets(Array.isArray(data) ? data : []);
+      setError('');
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await apiFetch('/tickets/?limit=100');
+        if (!res.ok) throw new Error('No se pudo conectar con el servidor.');
+        const data = await res.json();
+        if (active) { setTickets(Array.isArray(data) ? data : []); setError(''); }
+      } catch (err) {
+        if (active) setError(err.message);
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => { active = false; };
+  }, []);
 
   const totalTickets = tickets.length;
   
@@ -51,7 +64,7 @@ export default function DashboardPage() {
 
   return (
     <AppLayout>
-      <div style={{ width: '100%', boxSizing: 'border-box' }}>
+      <div style={{ width: '100%', maxWidth: '1320px', margin: '0 auto', boxSizing: 'border-box' }}>
         {/* ENCABEZADO Y ACCIONES */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <div>
@@ -110,83 +123,80 @@ export default function DashboardPage() {
         ) : (
           <>
             {/* TARJETAS KPI FLUIDAS */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: '14px', marginBottom: '20px', width: '100%' }}>
-              <KpiCard title="TOTAL TICKETS" count={totalTickets} color="#2563eb" onClick={() => navigate('/tickets')} />
-              <KpiCard title="ABIERTOS" count={abiertos} color="#2563eb" onClick={() => navigate('/tickets')} />
-              <KpiCard title="EN PROCESO" count={enProceso} color="#2563eb" onClick={() => navigate('/tickets')} />
-              <KpiCard title="RESUELTOS" count={resueltos} color="#2563eb" onClick={() => navigate('/tickets')} />
-              <KpiCard title="CERRADOS" count={cerrados} color="#2563eb" onClick={() => navigate('/tickets')} />
+            <div className="grid-kpis" style={{ marginBottom: '20px' }}>
+              <KpiCard title="TOTAL TICKETS" count={totalTickets} color="#2563eb" hint="Registrados en el sistema" onClick={() => navigate('/tickets')} />
+              <KpiCard title="ABIERTOS" count={abiertos} color="#0ea5e9" hint="Pendientes de atención" onClick={() => navigate('/tickets')} />
+              <KpiCard title="EN PROCESO" count={enProceso} color="#f59e0b" hint="En gestión actualmente" onClick={() => navigate('/tickets')} />
+              <KpiCard title="RESUELTOS" count={resueltos} color="#16a34a" hint="Atendidos correctamente" onClick={() => navigate('/tickets')} />
+              <KpiCard title="CERRADOS" count={cerrados} color="#64748b" hint="Finalizados y archivados" onClick={() => navigate('/tickets')} />
             </div>
 
             {/* PANELES DE DIBUJO */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '16px', marginBottom: '20px', width: '100%' }}>
-              
+            <div className="grid-charts" style={{ marginBottom: '20px' }}>
+
               {/* POR ESTADO */}
-              <div style={{ background: 'var(--card-bg, #ffffff)', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.03)', height: '220px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxSizing: 'border-box' }}>
-                <h3 style={{ fontSize: '0.78rem', fontWeight: 800, color: '#4b5563', letterSpacing: '0.5px', margin: 0, textTransform: 'uppercase', textAlign: 'center' }}>POR ESTADO</h3>
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1, filter: 'drop-shadow(0 6px 10px rgba(2, 62, 138, 0.12))' }}>
-                  <ResponsiveContainer width="100%" height={130}>
-                    <PieChart>
-                      <Pie data={[{ name: 'Abiertos', value: abiertos }, { name: 'En proceso', value: enProceso }, { name: 'Resueltos', value: resueltos }, { name: 'Cerrados', value: cerrados }]} dataKey="value" nameKey="name" innerRadius={30} outerRadius={55} paddingAngle={3} stroke="#fff" strokeWidth={2}>
-                        <Cell fill="#2563eb" />
-                        <Cell fill="#2563eb" />
-                        <Cell fill="#93c5fd" />
-                        <Cell fill="#cbd5e1" />
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
+              <ChartCard title="Distribución por estado" description="Tickets agrupados según su estado actual en el flujo de atención.">
+                <ResponsiveContainer width="100%" height={190}>
+                  <PieChart>
+                    <Pie data={[{ name: 'Abiertos', value: abiertos }, { name: 'En proceso', value: enProceso }, { name: 'Resueltos', value: resueltos }, { name: 'Cerrados', value: cerrados }]} dataKey="value" nameKey="name" innerRadius={44} outerRadius={74} paddingAngle={3} stroke="#fff" strokeWidth={2}>
+                      <Cell fill="#2563eb" />
+                      <Cell fill="#f59e0b" />
+                      <Cell fill="#16a34a" />
+                      <Cell fill="#94a3b8" />
+                    </Pie>
+                    <Tooltip formatter={(value, name) => [`${value} ticket(s)`, name]} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="chart-legend">
+                  <span><i style={{ background: '#2563eb' }} />Abiertos {abiertos}</span>
+                  <span><i style={{ background: '#f59e0b' }} />En proceso {enProceso}</span>
+                  <span><i style={{ background: '#16a34a' }} />Resueltos {resueltos}</span>
+                  <span><i style={{ background: '#94a3b8' }} />Cerrados {cerrados}</span>
                 </div>
-                <div style={{ fontSize: '0.75rem', color: '#6c757d', textAlign: 'center', fontWeight: 700 }}>
-                  <span style={{ color: '#0b4f78' }}>• Abiertos: {abiertos}</span> &nbsp;|&nbsp; 
-                  <span style={{ color: '#2563eb' }}>• Resueltos: {resueltos}</span>
-                </div>
-              </div>
+              </ChartCard>
 
               {/* POR PRIORIDAD */}
-              <div style={{ background: 'var(--card-bg, #ffffff)', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.03)', height: '220px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxSizing: 'border-box' }}>
-                <h3 style={{ fontSize: '0.78rem', fontWeight: 800, color: '#4b5563', letterSpacing: '0.5px', margin: 0, textTransform: 'uppercase', textAlign: 'center' }}>POR PRIORIDAD</h3>
-                <div style={{ display: 'flex', alignItems: 'flex-end', height: '110px' }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={[{ name: 'Baja', total: baja }, { name: 'Media', total: media }, { name: 'Alta', total: alta }, { name: 'Urgente', total: urgente }]}>
-                      <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                      <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                      <Tooltip />
-                      <Bar dataKey="total" radius={[6, 6, 0, 0]}>
-                        <Cell fill="#f59e0b" />
-                        <Cell fill="#fbbf24" />
-                        <Cell fill="#f97316" />
-                        <Cell fill="#ef4444" />
+              <ChartCard title="Tickets por prioridad" description="Volumen de solicitudes según el nivel de prioridad asignado.">
+                <ResponsiveContainer width="100%" height={190}>
+                  <BarChart data={[{ name: 'Baja', total: baja }, { name: 'Media', total: media }, { name: 'Alta', total: alta }, { name: 'Urgente', total: urgente }]} margin={{ top: 16, right: 8, left: -18, bottom: 0 }}>
+                    <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                    <Tooltip formatter={(value) => [`${value} ticket(s)`, 'Total']} />
+                    <Bar dataKey="total" radius={[6, 6, 0, 0]} maxBarSize={48}>
+                      <Cell fill="#f59e0b" />
+                      <Cell fill="#fbbf24" />
+                      <Cell fill="#f97316" />
+                      <Cell fill="#ef4444" />
+                      <LabelList dataKey="total" position="top" style={{ fontSize: 11, fill: '#475569', fontWeight: 700 }} />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartCard>
+
+              {/* POR DEPARTAMENTO */}
+              <ChartCard title="Tickets por departamento" description="Solicitudes agrupadas por área o dependencia responsable.">
+                {Object.keys(areasMap).length === 0 ? (
+                  <div style={{ fontSize: '0.82rem', color: '#64748b', textAlign: 'center' }}>Sin áreas registradas</div>
+                ) : (
+                  <ResponsiveContainer width="100%" height={190}>
+                    <BarChart layout="vertical" data={Object.entries(areasMap).map(([area, count]) => ({ name: area, total: count }))} margin={{ left: 10, right: 24, top: 5, bottom: 5 }}>
+                      <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
+                      <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 10 }} />
+                      <Tooltip formatter={(value) => [`${value} ticket(s)`, 'Total']} />
+                      <Bar dataKey="total" fill="#0b6efd" radius={[0, 4, 4, 0]} barSize={14}>
+                        <LabelList dataKey="total" position="right" style={{ fontSize: 11, fill: '#475569', fontWeight: 700 }} />
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
-                </div>
-              </div>
-
-              {/* POR DEPARTAMENTO */}
-              <div style={{ background: 'var(--card-bg, #ffffff)', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.03)', height: '220px', display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
-                <h3 style={{ fontSize: '0.78rem', fontWeight: 800, color: '#4b5563', letterSpacing: '0.5px', margin: '0 0 12px 0', textTransform: 'uppercase', textAlign: 'center' }}>POR DEPARTAMENTO</h3>
-                <div style={{ flex: 1, width: '100%' }}>
-                  {Object.keys(areasMap).length === 0 ? (
-                    <div style={{ fontSize: '0.82rem', color: '#64748b', textAlign: 'center' }}>Sin áreas registradas</div>
-                  ) : (
-                    <ResponsiveContainer width="100%" height={150}>
-                      <BarChart layout="vertical" data={Object.entries(areasMap).map(([area, count]) => ({ name: area, total: count }))} margin={{ left: 20, right: 20, top: 5, bottom: 5 }}>
-                        <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
-                        <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 10 }} />
-                        <Tooltip />
-                        <Bar dataKey="total" fill="#0b6efd" radius={[0, 4, 4, 0]} barSize={14} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  )}
-                </div>
-              </div>
+                )}
+              </ChartCard>
 
             </div>
 
             {/* TABLA DE TICKETS RECIENTES */}
             <div style={{ background: 'var(--card-bg, #ffffff)', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.03)', width: '100%', boxSizing: 'border-box' }}>
               <h3 style={{ fontSize: '0.78rem', fontWeight: 800, color: '#4b5563', letterSpacing: '0.5px', marginBottom: '16px', textTransform: 'uppercase', textAlign: 'center' }}>TICKETS RECIENTES</h3>
+              <div className="table-wrap">
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid #e2e8f0', background: '#f8fafc', textAlign: 'center', color: '#374151', fontSize: '0.72rem', fontWeight: 800 }}>
@@ -205,7 +215,7 @@ export default function DashboardPage() {
                     </tr>
                   ) : (
                     tickets.map((t) => (
-                      <tr key={t.id} style={{ borderBottom: '1px solid #e2e8f0', textAlign: 'center', background: '#f8fafc' }}>
+                      <tr key={t.id} style={{ borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>
                         <td style={{ padding: '12px 10px', fontWeight: 700, color: '#2563eb' }}>#{t.id}</td>
                         <td style={{ padding: '12px 10px', fontWeight: 600, color: '#1e293b' }}>{t.title}</td>
                         <td style={{ padding: '12px 10px', color: '#475569' }}>{t.area || 'N/A'}</td>
@@ -219,6 +229,7 @@ export default function DashboardPage() {
                   )}
                 </tbody>
               </table>
+              </div>
             </div>
           </>
         )}
@@ -227,14 +238,16 @@ export default function DashboardPage() {
   );
 }
 
-function KpiCard({ title, count, color, onClick }) {
+function KpiCard({ title, count, color, hint, onClick }) {
   return (
     <motion.div 
       whileHover={{ y: -4, boxShadow: '0 6px 16px rgba(2, 62, 138, 0.15)' }}
-      style={{ background: 'var(--card-bg, #ffffff)', padding: '16px 8px 12px', borderRadius: '10px', borderTop: `3px solid ${color}`, borderLeft: '1px solid #e2e8f0', borderRight: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.03)', boxSizing: 'border-box', cursor: 'pointer' }}>
+      onClick={onClick}
+      style={{ background: 'var(--card-bg, #ffffff)', padding: '16px 12px 14px', borderRadius: '10px', borderTop: `3px solid ${color}`, borderLeft: '1px solid #e2e8f0', borderRight: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.03)', boxSizing: 'border-box', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '120px' }}>
       <div style={{ fontSize: '0.68rem', fontWeight: 800, color: '#4b5563', letterSpacing: '0.5px' }}>{title}</div>
-      <div style={{ fontSize: '1.9rem', fontWeight: 800, color: color, margin: '4px 0 6px' }}>{count}</div>
-      <div onClick={onClick} style={{ fontSize: '0.75rem', color: '#2563eb', fontWeight: 600, cursor: 'pointer' }}>Ver detalles →</div>
+      <div style={{ fontSize: '1.9rem', fontWeight: 800, color: color, margin: '4px 0 2px', lineHeight: 1.1 }}>{count}</div>
+      {hint && <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600 }}>{hint}</div>}
+      <div style={{ fontSize: '0.72rem', color: '#2563eb', fontWeight: 600, marginTop: '6px' }}>Ver detalles →</div>
     </motion.div>
   );
 }

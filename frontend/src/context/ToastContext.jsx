@@ -15,13 +15,9 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: '8px' }} role="status" aria-live="polite">
         {toasts.map((t) => (
-          <div key={t.id} style={{
-            background: t.type === 'error' ? '#dc3545' : '#198754',
-            color: '#fff', padding: '10px 16px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-          }}>
+          <div key={t.id} className={`toast toast--${t.type === 'error' ? 'error' : 'success'}`}>
             {t.message}
           </div>
         ))}
