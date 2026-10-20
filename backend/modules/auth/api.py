@@ -94,6 +94,7 @@ def create_user(
     return UserResponse.from_user(user)
 
 
+
 @router.get("/users", response_model=list[UserResponse])
 def list_users(
     skip: int = 0,
@@ -118,6 +119,7 @@ def deactivate_user(
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     return UserResponse.from_user(user)
+
 
 
 @router.delete("/users/{user_id}")
@@ -147,6 +149,7 @@ def reset_password(
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     return UserResponse.from_user(user)
+
 
 
 @router.patch("/users/{user_id}/reactivate", response_model=UserResponse)

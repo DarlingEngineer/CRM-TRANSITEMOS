@@ -1,8 +1,8 @@
+from .schemas import TicketHistoryResponse, TicketCreate, TicketUpdate, TicketResponse
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from core.database import get_db
 from core.permissions import require_roles
-from .schemas import TicketCreate, TicketUpdate, TicketResponse
 from .repository import TicketRepository
 from .service import TicketService
 from .models import Area
@@ -73,9 +73,22 @@ def update_ticket_status(
     db: Session = Depends(get_db),
     current_user: dict = Depends(require_roles("admin", "tecnico")),
 ):
-    service = TicketService(TicketRepository(db))
+    service = TicketService(TicketRepository(db))   # ← corregido
     try:
+<<<<<<< HEAD
         ticket = service.update_status(ticket_id, data.status, current_user.get("username"))
+=======
+        ticket = service.update_status(ticket_id, data.status, changed_by_id=current_user["user_id"])
+>>>>>>> upstream/main
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     return TicketResponse.from_ticket(ticket)
+
+@router.get("/{ticket_id}/history", response_model=list[TicketHistoryResponse])
+def historial_ticket(
+    ticket_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(require_roles("admin", "tecnico")),
+):
+    service = TicketService(TicketRepository(db))
+    return service.get_history(ticket_id)

@@ -15,8 +15,22 @@ class TicketService:
             return self.repository.list_all(skip, limit)
         return self.repository.list_by_user(user_id, skip, limit)
 
+<<<<<<< HEAD
     def update_status(self, ticket_id: int, new_status: str, username: str | None = None):
+=======
+    def update_status(self, ticket_id: int, new_status: str, changed_by_id: int):
+>>>>>>> upstream/main
         ticket = self.repository.get_by_id(ticket_id)
-        if not ticket:
+        if ticket is None:
             raise ValueError("Ticket no encontrado")
+<<<<<<< HEAD
         return self.repository.update_status(ticket, new_status, username)
+=======
+        old_status = ticket.status
+        updated = self.repository.update_status(ticket, new_status)   # ← antes decía ticket_id
+        self.repository.log_status_change(ticket_id, old_status, new_status, changed_by_id)
+        return updated
+
+    def get_history(self, ticket_id: int):
+        return self.repository.get_history(ticket_id)
+>>>>>>> upstream/main
