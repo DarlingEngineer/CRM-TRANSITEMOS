@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "c13659c3-6e8c-48e7-9aab-9f367977d515",
+  "status": "current",
+  "command": "deliver",
+  "type": "workflow",
+  "input": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\flujo-reportes.workflow.json",
+  "output": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\flujo-reportes.html",
+  "specification": {
+    "sha256": "67161529a29ab69766d53c973b8dc251b1da9b3d1a33f4d52becca4589124af1",
+    "bytes": 34731
+  },
+  "artifact": {
+    "sha256": "29031e4573785dd47b93cb02dad7f8fe420e9a26df11d52d702fe2cda896aeca",
+    "bytes": 831888
+  }
+}

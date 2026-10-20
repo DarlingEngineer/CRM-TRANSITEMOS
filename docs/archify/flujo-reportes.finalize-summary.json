@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "workflow",
+  "quality": "showcase",
+  "specification": {
+    "path": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\flujo-reportes.workflow.json",
+    "sha256": "67161529a29ab69766d53c973b8dc251b1da9b3d1a33f4d52becca4589124af1",
+    "bytes": 34731
+  },
+  "artifact": {
+    "path": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\flujo-reportes.html",
+    "sha256": "29031e4573785dd47b93cb02dad7f8fe420e9a26df11d52d702fe2cda896aeca",
+    "bytes": 831888
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\flujo-reportes.finalize.json",
+    "summaryReceipt": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\flujo-reportes.finalize-summary.json",
+    "browserCheckReceipt": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\flujo-reportes.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-20T19:46:57.332Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 4066,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

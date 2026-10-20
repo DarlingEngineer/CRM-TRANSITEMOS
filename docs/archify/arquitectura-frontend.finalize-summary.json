@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\arquitectura-frontend.architecture.json",
+    "sha256": "19c6f0e354a5ef678441d1e801852c2d376c11d4e8bda3af084ec7ea5fae61be",
+    "bytes": 4643
+  },
+  "artifact": {
+    "path": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\arquitectura-frontend.html",
+    "sha256": "42f953714db7fc33910877eb46b0b381c27f1a6291bac48b88a3e3b8cbfa3150",
+    "bytes": 827623
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\arquitectura-frontend.finalize.json",
+    "summaryReceipt": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\arquitectura-frontend.finalize-summary.json",
+    "browserCheckReceipt": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\arquitectura-frontend.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-20T19:46:57.332Z",
+    "source": "network",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 4077,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

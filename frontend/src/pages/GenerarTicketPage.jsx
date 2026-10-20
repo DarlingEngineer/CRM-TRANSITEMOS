@@ -1,26 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Send, Info } from 'lucide-react';
 import AppLayout from '../layouts/AppLayout';
+import PageHeader from '../components/PageHeader';
 import { apiFetch } from '../apiClient';
 import { ErrorBanner } from '../components/Feedback';
 import { useToast } from '../context/ToastContext';
+import { PRIORITY_COLORS } from '../utils/chartTheme';
+
+const PRIORITY_OPTIONS = [
+  { value: 'Baja', description: 'Sin impacto inmediato; puede atenderse después.' },
+  { value: 'Media', description: 'Afecta una tarea puntual sin bloquear la operación.' },
+  { value: 'Alta', description: 'Impide realizar una actividad importante.' },
+  { value: 'Urgente', description: 'Riesgo operativo o interrupción crítica del servicio.' },
+];
 
 export default function GenerarTicketPage() {
   const { showToast } = useToast() || {};
   const navigate = useNavigate();
   const [areas, setAreas] = useState([]);
   const [loadingAreas, setLoadingAreas] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const [formData, setFormData] = useState({
     title: '',
     body: '',
     priority: 'Alta',
     status: 'Abierto',
-    area: ''
+    area: '',
   });
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -31,43 +40,51 @@ export default function GenerarTicketPage() {
           const data = await res.json();
           if (active && Array.isArray(data) && data.length > 0) {
             setAreas(data);
-            setFormData(prev => ({ ...prev, area: data[0].name }));
+            setFormData((prev) => ({ ...prev, area: data[0].name }));
           }
         }
         if (active) setError('');
       } catch (err) {
-        if (active) setError('No se pudieron cargar las áreas.');
-        console.error("Error al cargar áreas de la API:", err);
+        if (active) setError('No se pudieron cargar las áreas. Verifica la conexión con el servidor.');
+        console.error('Error al cargar áreas de la API:', err);
       } finally {
         if (active) setLoadingAreas(false);
       }
     })();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.name === 'title' ? e.target.value.toUpperCase() : e.target.value
-    });
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === 'title' ? value.toUpperCase() : value,
+    }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (loading) return;
+
     setLoading(true);
     setError('');
 
     try {
       const res = await apiFetch('/tickets/', {
         method: 'POST',
-        body: formData
+        body: formData,
       });
 
       if (!res.ok) {
-        throw new Error('No se pudo guardar el ticket. Verifica la conexión con el servidor.');
+        const data = await res.json().catch(() => null);
+        throw new Error(
+          data?.detail || 'No se pudo guardar la solicitud. Verifica la conexión con el servidor.',
+        );
       }
 
-      showToast('Ticket creado correctamente');
+      showToast?.('Solicitud creada correctamente');
       navigate('/tickets');
     } catch (err) {
       setError(err.message);
@@ -76,135 +93,220 @@ export default function GenerarTicketPage() {
     }
   };
 
-  // Estilos forzados para garantizar fondo blanco en todos los bloques de texto
-  const inputStyle = {
-    width: '100%',
-    padding: '10px 14px',
-    fontSize: '0.9rem',
-    borderRadius: '6px',
-    border: '1px solid #ced4da',
-    backgroundColor: '#ffffff',
-    color: '#212529',
-    outline: 'none',
-    boxSizing: 'border-box'
-  };
-
-  const labelStyle = {
-    display: 'block',
-    fontSize: '0.75rem',
-    fontWeight: 700,
-    color: '#495057',
-    marginBottom: '6px',
-    letterSpacing: '0.5px',
-    textTransform: 'uppercase'
-  };
+  const descriptionLength = formData.body.trim().length;
 
   return (
     <AppLayout>
-      <div style={{ maxWidth: '680px', margin: '20px auto 0', background: 'var(--card-bg, #ffffff)', padding: '30px 36px', borderRadius: '10px', border: '1px solid #e9ecef', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', borderTop: '4px solid #0d6efd' }}>
-        
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0d4b75', margin: 0 }}>
-            ➕ Generar Nuevo Ticket
-          </h2>
-          <p style={{ fontSize: '0.85rem', color: '#6c757d', marginTop: '6px' }}>
-            Diligencia la información para aperturar una solicitud formal.
-          </p>
-        </div>
+      <div className="page page--form page--ticket-form">
+        <PageHeader
+          eyebrow="Solicitudes"
+          title="Nueva solicitud"
+          subtitle="Registra el requerimiento con la información necesaria para que el área responsable pueda atenderlo."
+          actions={(
+            <button
+              type="button"
+              className="btn btn--secondary"
+              onClick={() => navigate('/tickets')}
+            >
+              <ArrowLeft size={16} aria-hidden="true" />
+              Volver al listado
+            </button>
+          )}
+        />
 
         <ErrorBanner message={error} />
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-          <div>
-            <label style={labelStyle}>TÍTULO DEL TICKET</label>
-            <input 
-              type="text" 
-              name="title" 
-              value={formData.title} 
-              onChange={handleChange} 
-              required 
-              placeholder="Ej: Requerimiento de acceso" 
-              style={{ ...inputStyle, textTransform: 'uppercase' }}
-            />
-          </div>
+        <form className="ticket-form" onSubmit={handleSubmit} noValidate={false}>
+          <section className="card ticket-form__card">
+              <div className="card__header">
+                <div>
+                  <h2 className="card__title">Información de la solicitud</h2>
+                  <p className="card__subtitle">
+                    Los campos marcados con <span className="field__req">*</span> son obligatorios.
+                  </p>
+                </div>
+              </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px' }}>
-            <div>
-              <label style={labelStyle}>ÁREA</label>
-              <select 
-                name="area" 
-                value={formData.area} 
-                onChange={handleChange} 
-                disabled={loadingAreas}
-                style={{ ...inputStyle, cursor: 'pointer' }}>
-                {loadingAreas ? (
-                  <option value="">Cargando áreas...</option>
-                ) : areas.length === 0 ? (
-                  <option value="">Sin áreas disponibles</option>
-                ) : (
-                  areas.map((u, index) => (
-                    <option key={u.id || index} value={u.name}>
-                      {u.name}
-                    </option>
-                  ))
+              <div className="card__body form-stack">
+                <div className="field">
+                  <label className="field__label" htmlFor="ticket-title">
+                    Título de la solicitud <span className="field__req" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    id="ticket-title"
+                    className="input"
+                    type="text"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleChange}
+                    required
+                    autoComplete="off"
+                    placeholder="Ej.: Solicitud de acceso al sistema de registro"
+                    aria-describedby="ticket-title-help"
+                  />
+                  <p className="field__help" id="ticket-title-help">
+                    Escribe una frase breve que identifique el motivo de la solicitud. Evita
+                    incluir detalles que puedan ir en la descripción.
+                  </p>
+                </div>
+
+                <div className="form-grid form-grid--2">
+                  <div className="field">
+                    <label className="field__label" htmlFor="ticket-area">
+                      Área responsable <span className="field__req" aria-hidden="true">*</span>
+                    </label>
+                    <select
+                      id="ticket-area"
+                      className="select"
+                      name="area"
+                      value={formData.area}
+                      onChange={handleChange}
+                      disabled={loadingAreas}
+                      required
+                      aria-describedby="ticket-area-help"
+                    >
+                      {loadingAreas ? (
+                        <option value="">Cargando áreas…</option>
+                      ) : areas.length === 0 ? (
+                        <option value="">Sin áreas disponibles</option>
+                      ) : (
+                        areas.map((area) => (
+                          <option key={area.id} value={area.name}>
+                            {area.name}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                    <p className="field__help" id="ticket-area-help">
+                      Dependencia que revisará y dará trámite al requerimiento.
+                    </p>
+                  </div>
+
+                  <div className="field">
+                    <label className="field__label" htmlFor="ticket-status">
+                      Estado inicial
+                    </label>
+                    <input
+                      id="ticket-status"
+                      className="input"
+                      type="text"
+                      value={formData.status}
+                      disabled
+                      aria-describedby="ticket-status-help"
+                    />
+                    <p className="field__help" id="ticket-status-help">
+                      Toda solicitud nueva ingresa en estado Abierto.
+                    </p>
+                  </div>
+                </div>
+
+                <fieldset className="field priority-field">
+                  <legend className="field__label">
+                    Prioridad <span className="field__req" aria-hidden="true">*</span>
+                  </legend>
+                  <div className="priority-grid">
+                    {PRIORITY_OPTIONS.map((option) => {
+                      const selected = formData.priority === option.value;
+                      return (
+                        <label
+                          key={option.value}
+                          className={`priority-option${selected ? ' is-selected' : ''}`}
+                        >
+                          <input
+                            className="priority-option__input"
+                            type="radio"
+                            name="priority"
+                            value={option.value}
+                            checked={selected}
+                            onChange={handleChange}
+                          />
+                          <span
+                            className="priority-option__dot"
+                            style={{ background: PRIORITY_COLORS[option.value] }}
+                            aria-hidden="true"
+                          />
+                          <span className="priority-option__text">
+                            <strong>{option.value}</strong>
+                            <small>{option.description}</small>
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                  <p className="field__help">
+                    Selecciona el nivel que mejor refleje el impacto actual. El área responsable
+                    podrá ajustarlo durante la gestión.
+                  </p>
+                </fieldset>
+
+                <div className="field field--fill">
+                  <div className="field__label-row">
+                    <label className="field__label" htmlFor="ticket-body">
+                      Descripción detallada <span className="field__req" aria-hidden="true">*</span>
+                    </label>
+                    <span className="field__counter">{descriptionLength} caracteres</span>
+                  </div>
+                  <textarea
+                    id="ticket-body"
+                    className="textarea"
+                    name="body"
+                    rows="6"
+                    value={formData.body}
+                    onChange={handleChange}
+                    required
+                    placeholder="Describe qué ocurre, desde cuándo, a quién afecta y qué resultado esperas."
+                    aria-describedby="ticket-body-help"
+                  />
+                  <p className="field__help" id="ticket-body-help">
+                    Incluye el contexto necesario para evitar solicitudes de información
+                    adicional. No registres contraseñas ni datos sensibles.
+                  </p>
+                </div>
+
+                {!loadingAreas && areas.length === 0 && (
+                  <div className="alert alert--info" role="status">
+                    <Info size={16} aria-hidden="true" />
+                    <span>
+                      No hay áreas configuradas. Solicita a un administrador que registre al
+                      menos un área antes de crear la solicitud.
+                    </span>
+                  </div>
                 )}
-              </select>
-            </div>
 
-            <div>
-              <label style={labelStyle}>PRIORIDAD</label>
-              <select name="priority" value={formData.priority} onChange={handleChange} style={{ ...inputStyle, cursor: 'pointer' }}>
-                <option value="Baja">Baja</option>
-                <option value="Media">Media</option>
-                <option value="Alta">Alta</option>
-                <option value="Urgente">Urgente</option>
-              </select>
-            </div>
-          </div>
+              </div>
 
-          <div>
-            <label style={labelStyle}>DESCRIPCIÓN</label>
-            <textarea 
-              name="body" 
-              rows="4" 
-              value={formData.body} 
-              onChange={handleChange} 
-              required 
-              placeholder="Detalla el problema o requerimiento..." 
-              style={{ ...inputStyle, resize: 'vertical' }}
-            ></textarea>
-          </div>
-
-          {/* Vista previa de lo que se está diligenciando */}
-          <div style={{ background: '#f8fafc', border: '1px dashed #94a3b8', borderRadius: '10px', padding: '14px 16px' }}>
-            <h4 style={{ margin: '0 0 8px', fontSize: '0.78rem', fontWeight: 800, color: '#475569', textTransform: 'uppercase' }}>Vista previa del ticket</h4>
-            <p style={{ margin: '0 0 4px', fontSize: '0.85rem' }}><strong>Título:</strong> {formData.title || '—'}</p>
-            <p style={{ margin: '0 0 4px', fontSize: '0.85rem' }}><strong>Área:</strong> {formData.area || '—'} · <strong>Prioridad:</strong> {formData.priority}</p>
-            <p style={{ margin: 0, fontSize: '0.85rem', whiteSpace: 'pre-wrap' }}><strong>Descripción:</strong> {formData.body || '—'}</p>
-          </div>
-
-          <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
-            <button 
-              type="submit" 
-              disabled={loading}
-              style={{ flex: 1, background: '#2563eb', color: '#ffffff', border: 'none', padding: '11px', borderRadius: '6px', fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer' }}>
-              {loading ? 'Guardando...' : 'Guardar Ticket'}
-            </button>
-            <button 
-              type="button" 
-              onClick={() => navigate('/tickets')}
-              style={{ background: '#e9ecef', color: '#495057', border: 'none', padding: '11px 20px', borderRadius: '6px', fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer' }}>
-              Cancelar
-            </button>
-          </div>
+              <div className="card__footer">
+                <div className="form-actions">
+                  <button
+                    type="button"
+                    className="btn btn--ghost"
+                    onClick={() => navigate('/tickets')}
+                    disabled={loading}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn--primary"
+                    disabled={loading || loadingAreas}
+                  >
+                    {loading ? (
+                      <>
+                        <span className="spinner spinner--sm spinner--light" aria-hidden="true" />
+                        Creando solicitud…
+                      </>
+                    ) : (
+                      <>
+                        <Send size={16} aria-hidden="true" />
+                        Crear solicitud
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+          </section>
         </form>
       </div>
     </AppLayout>
   );
 }
-
-
-
-
-
-

@@ -2,8 +2,10 @@
 
 .login-container {
   min-height: 100vh !important;
+  min-height: 100dvh !important;
   height: 100vh !important;
-  width: 100vw !important;
+  height: 100dvh !important;
+  width: 100% !important;
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
@@ -31,6 +33,7 @@
   max-width: 95% !important;
   height: 480px !important;
   max-height: calc(100vh - 40px) !important;
+  max-height: calc(100dvh - 40px) !important;
   background-color: #ffffff !important;
   border-radius: 22px !important;
   box-shadow:
@@ -272,4 +275,76 @@
   font-size: 0.68rem !important;
   color: #b6c0cb !important;
   text-align: center !important;
+}
+
+/* ---- Adaptación a resoluciones estrechas y de poca altura ---- */
+@media (max-width: 760px) {
+  .login-container {
+    padding: 16px !important;
+  }
+
+  .login-card {
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 420px !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  .login-brand-panel {
+    display: none !important;
+  }
+
+  .login-form-panel {
+    width: 100% !important;
+    padding: 32px 24px !important;
+    gap: 20px !important;
+  }
+
+  .form-wrapper {
+    max-width: 100% !important;
+  }
+}
+
+@media (max-height: 620px) and (min-width: 761px) {
+  .login-card {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .login-brand-panel {
+    padding: 20px 22px !important;
+  }
+
+  .brand-logo-container {
+    margin-bottom: 18px !important;
+  }
+
+  .brand-info {
+    margin-bottom: 16px !important;
+  }
+
+  .login-form-panel {
+    padding: 24px 28px !important;
+    gap: 16px !important;
+  }
+
+  .form-title {
+    font-size: 1.3rem !important;
+  }
+
+  .form-subtitle {
+    margin-bottom: 16px !important;
+  }
+}
+
+@media (max-height: 520px) {
+  .login-container {
+    align-items: flex-start !important;
+    overflow-y: auto !important;
+  }
+
+  .login-card {
+    margin: 0 auto !important;
+  }
 }

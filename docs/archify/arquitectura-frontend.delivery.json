@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "f1da96bb-41db-4afe-896d-87578faa07c3",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\arquitectura-frontend.architecture.json",
+  "output": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\arquitectura-frontend.html",
+  "specification": {
+    "sha256": "19c6f0e354a5ef678441d1e801852c2d376c11d4e8bda3af084ec7ea5fae61be",
+    "bytes": 4643
+  },
+  "artifact": {
+    "sha256": "42f953714db7fc33910877eb46b0b381c27f1a6291bac48b88a3e3b8cbfa3150",
+    "bytes": 827623
+  }
+}

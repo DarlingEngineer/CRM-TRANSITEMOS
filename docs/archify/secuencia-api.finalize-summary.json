@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "sequence",
+  "quality": "showcase",
+  "specification": {
+    "path": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\secuencia-api.sequence.json",
+    "sha256": "2c020f5dd431bde427f59f71b2d0978feaacdf7688f52b43145a22d43ee974ea",
+    "bytes": 33781
+  },
+  "artifact": {
+    "path": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\secuencia-api.html",
+    "sha256": "539330fb989bcf246e89c2852f7769b25f4a05ed2df70363120adc3d1cbaafaf",
+    "bytes": 821552
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\secuencia-api.finalize.json",
+    "summaryReceipt": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\secuencia-api.finalize-summary.json",
+    "browserCheckReceipt": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\secuencia-api.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-20T19:46:57.332Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 3892,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

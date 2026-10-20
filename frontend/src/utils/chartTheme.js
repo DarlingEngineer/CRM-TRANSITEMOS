@@ -51,21 +51,13 @@ export const CHART_INK = {
   brand: '#0b4f78',
 };
 
-export const AXIS_TICK = { fontSize: 11, fill: CHART_INK.muted };
-export const VALUE_LABEL = { fontSize: 11, fill: CHART_INK.text, fontWeight: 700 };
+export const AXIS_TICK = { fontSize: 11, fill: CHART_INK.muted, fontWeight: 500 };
+export const VALUE_LABEL = { fontSize: 11, fill: '#0f172a', fontWeight: 700 };
 
-// Tooltip común para Recharts: <Tooltip {...TOOLTIP_PROPS} />
-export const TOOLTIP_PROPS = {
-  contentStyle: {
-    borderRadius: 8,
-    border: `1px solid ${CHART_INK.grid}`,
-    boxShadow: '0 6px 18px rgba(15, 55, 100, 0.12)',
-    fontSize: 12,
-  },
-  labelStyle: { color: CHART_INK.text, fontWeight: 700 },
-  itemStyle: { color: CHART_INK.text },
-  cursor: { fill: 'rgba(42, 120, 214, 0.08)' },
-};
+// Cuadrícula y cursores suaves, comunes a todas las gráficas.
+export const CHART_GRID = { stroke: '#e6eef7', strokeDasharray: '3 4' };
+export const CHART_CURSOR = { fill: 'rgba(37, 99, 235, 0.055)' };
+export const LINE_CURSOR = { stroke: '#94a3b8', strokeDasharray: '4 4' };
 
 // Normaliza variantes como "En Proceso" o "in_progress".
 const STATUS_ALIASES = {

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "462d23a9-6208-42ef-bf52-d089c6dd1cdc",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\secuencia-api.sequence.json",
+  "output": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\secuencia-api.html",
+  "specification": {
+    "sha256": "2c020f5dd431bde427f59f71b2d0978feaacdf7688f52b43145a22d43ee974ea",
+    "bytes": 33781
+  },
+  "artifact": {
+    "sha256": "539330fb989bcf246e89c2852f7769b25f4a05ed2df70363120adc3d1cbaafaf",
+    "bytes": 821552
+  }
+}

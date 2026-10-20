@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "985a7dbe-7f3d-488e-828e-a284a063a18a",
+  "status": "current",
+  "command": "deliver",
+  "type": "workflow",
+  "input": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\navegacion.workflow.json",
+  "output": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\navegacion.html",
+  "specification": {
+    "sha256": "5d5f2096b1ff234db0d6c1c9ccf3d04b899269e7f6c7c3b5dc9607f2f2b122b6",
+    "bytes": 34909
+  },
+  "artifact": {
+    "sha256": "b078ef871ac58fbc6d8ed3d7443ef5a0f31008de1a091e4ce2a7d2f801b1f42e",
+    "bytes": 834687
+  }
+}

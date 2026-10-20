@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "workflow",
+  "quality": "showcase",
+  "specification": {
+    "path": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\navegacion.workflow.json",
+    "sha256": "5d5f2096b1ff234db0d6c1c9ccf3d04b899269e7f6c7c3b5dc9607f2f2b122b6",
+    "bytes": 34909
+  },
+  "artifact": {
+    "path": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\navegacion.html",
+    "sha256": "b078ef871ac58fbc6d8ed3d7443ef5a0f31008de1a091e4ce2a7d2f801b1f42e",
+    "bytes": 834687
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\navegacion.finalize.json",
+    "summaryReceipt": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\navegacion.finalize-summary.json",
+    "browserCheckReceipt": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\navegacion.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-20T19:46:57.332Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 3952,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

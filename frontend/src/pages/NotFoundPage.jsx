@@ -1,21 +1,21 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 
 export default function NotFoundPage() {
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', fontFamily: "'Segoe UI', system-ui, sans-serif", background: '#f1f5f9' }}>
-      <h1 style={{ fontSize: '4rem', margin: 0, color: '#0b4f78' }}>404</h1>
-      <p style={{ color: '#64748b', marginBottom: '20px' }}>La página que buscas no existe.</p>
-      <Link to="/dashboard" style={{ background: '#2563eb', color: '#fff', padding: '10px 20px', borderRadius: '6px', textDecoration: 'none', fontWeight: 700 }}>
-        Volver al Dashboard
-      </Link>
+    <div className="route-loading">
+      <div className="card" style={{ maxWidth: 440, padding: '34px 30px', textAlign: 'center' }}>
+        <p className="page-header__eyebrow" style={{ marginBottom: 4 }}>Error 404</p>
+        <h1 className="page-title" style={{ fontSize: '2.6rem', letterSpacing: '-0.04em' }}>404</h1>
+        <p className="page-subtitle" style={{ margin: '10px auto 22px' }}>
+          La página que buscas no existe o fue movida a otra ubicación.
+        </p>
+        <Link to="/dashboard" className="btn btn--primary">
+          <ArrowLeft size={16} aria-hidden="true" />
+          Volver al dashboard
+        </Link>
+      </div>
     </div>
   );
 }
-
-
-
-
-
-
-

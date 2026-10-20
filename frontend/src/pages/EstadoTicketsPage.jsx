@@ -1,28 +1,64 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  Search,
+  RefreshCw,
+  Plus,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Inbox,
+  Clock,
+  CheckCircle2,
+  Lock,
+  Ticket as TicketIcon,
+} from 'lucide-react';
 import AppLayout from '../layouts/AppLayout';
+import PageHeader from '../components/PageHeader';
+import Modal from '../components/Modal';
+import StatCard from '../components/StatCard';
 import { apiFetch } from '../apiClient';
-import { ErrorBanner, Loading, EmptyState, StatusBadge, PriorityBadge } from '../components/Feedback';
+import {
+  ErrorBanner,
+  Loading,
+  EmptyState,
+  StatusBadge,
+  PriorityBadge,
+} from '../components/Feedback';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
+import { formatDateTime } from '../utils/reportData';
+
+const STATUS_OPTIONS = ['Abierto', 'En proceso', 'Resuelto', 'Cerrado'];
+const PRIORITY_OPTIONS = ['Baja', 'Media', 'Alta', 'Urgente'];
+const PAGE_SIZE = 10;
+
+const formatDate = (iso) => {
+  if (!iso) return '—';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+};
 
 export default function EstadoTicketsPage() {
   const { showToast } = useToast() || {};
   const { role } = useAuth() || {};
   const puedeEditar = role === 'admin' || role === 'tecnico';
+  const navigate = useNavigate();
+
   const [tickets, setTickets] = useState([]);
+  const [areas, setAreas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [updatingId, setUpdatingId] = useState(null);
+
   const [filterStatus, setFilterStatus] = useState('');
   const [filterPriority, setFilterPriority] = useState('');
   const [filterArea, setFilterArea] = useState('');
-  const [areas, setAreas] = useState([]);
   const [search, setSearch] = useState('');
-  const [selectedTicket, setSelectedTicket] = useState(null);
   const [page, setPage] = useState(1);
-  const PAGE_SIZE = 10;
-  const navigate = useNavigate();
+  const [selectedTicket, setSelectedTicket] = useState(null);
 
   const fetchTickets = useCallback(async () => {
     try {
@@ -45,274 +81,613 @@ export default function EstadoTicketsPage() {
         const res = await apiFetch('/tickets/?limit=100');
         if (!res.ok) throw new Error('No se pudo conectar con el servidor.');
         const data = await res.json();
-        if (active) { setTickets(Array.isArray(data) ? data : []); setError(''); }
+        if (active) {
+          setTickets(Array.isArray(data) ? data : []);
+          setError('');
+        }
       } catch (err) {
         if (active) setError(err.message);
       } finally {
         if (active) setLoading(false);
       }
+
       try {
         const res = await apiFetch('/areas/');
         if (res.ok) {
           const data = await res.json();
-          if (active) setAreas(data);
+          if (active) setAreas(Array.isArray(data) ? data : []);
         }
-      } catch { /* silencio */ }
+      } catch {
+        /* El filtro por área queda vacío si no se pueden cargar. */
+      }
     })();
-    return () => { active = false; };
+
+    return () => {
+      active = false;
+    };
   }, []);
 
-  // Función para cambiar el estado enviando actualización completa a la API
+  /**
+   * Cambia el estado en la API y refleja el resultado en pantalla.
+   * Devuelve true solo si la actualización se completó.
+   */
   const handleStatusChange = async (ticket, newStatus) => {
-    if (!window.confirm(`¿Cambiar el estado del ticket #${ticket.id} a "${newStatus}"?`)) return;
+    if (!ticket || newStatus === ticket.status) return false;
+    if (!window.confirm(`¿Cambiar el estado del ticket #${ticket.id} a "${newStatus}"?`)) {
+      return false;
+    }
+
     setUpdatingId(ticket.id);
     setError('');
+
     try {
       const res = await apiFetch(`/tickets/${ticket.id}`, {
         method: 'PUT',
         body: { status: newStatus },
       });
-      if (!res.ok) throw new Error('No se pudo actualizar el estado.');
 
-      // Actualizamos el estado local para reflejar el cambio en tiempo real
-      setTickets(prev => prev.map(t => t.id === ticket.id ? { ...t, status: newStatus } : t));
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.detail || 'No se pudo actualizar el estado.');
+      }
+
+      setTickets((prev) => prev.map((item) => (
+        item.id === ticket.id ? { ...item, status: newStatus } : item
+      )));
+      setSelectedTicket((prev) => (
+        prev && prev.id === ticket.id ? { ...prev, status: newStatus } : prev
+      ));
       showToast?.(`Estado del ticket #${ticket.id} actualizado a "${newStatus}"`);
+      return true;
     } catch (err) {
-      setError('Error al actualizar en la API: ' + err.message);
+      setError(`No se pudo actualizar el ticket: ${err.message}`);
       showToast?.('Error al actualizar el ticket', 'error');
+      return false;
     } finally {
       setUpdatingId(null);
     }
   };
 
-  const filteredTickets = tickets.filter(t =>
-    (!filterStatus || t.status === filterStatus) &&
-    (!filterPriority || t.priority === filterPriority) &&
-    (!filterArea || t.area === filterArea) &&
-    (!search || t.title.toLowerCase().includes(search.toLowerCase()) || String(t.id).includes(search))
-  );
+  const handleCloseTicket = async (ticket) => {
+    const updated = await handleStatusChange(ticket, 'Cerrado');
+    if (updated) setSelectedTicket(null);
+  };
+
+  const filteredTickets = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return tickets.filter((ticket) => (
+      (!filterStatus || ticket.status === filterStatus)
+      && (!filterPriority || ticket.priority === filterPriority)
+      && (!filterArea || ticket.area === filterArea)
+      && (
+        !term
+        || (ticket.title || '').toLowerCase().includes(term)
+        || String(ticket.id).includes(term)
+      )
+    ));
+  }, [tickets, filterStatus, filterPriority, filterArea, search]);
+
+  const suggestions = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return [];
+    return tickets
+      .filter((ticket) => (
+        (ticket.title || '').toLowerCase().includes(term)
+        || String(ticket.id).includes(term)
+      ))
+      .slice(0, 6);
+  }, [tickets, search]);
+
   const totalPages = Math.max(1, Math.ceil(filteredTickets.length / PAGE_SIZE));
-  const pageTickets = filteredTickets.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const safePage = Math.min(page, totalPages);
+  const startIndex = (safePage - 1) * PAGE_SIZE;
+  const pageTickets = filteredTickets.slice(startIndex, startIndex + PAGE_SIZE);
+
+  const counts = useMemo(() => ({
+    total: tickets.length,
+    abiertos: tickets.filter((t) => (t.status || '').toLowerCase() === 'abierto').length,
+    proceso: tickets.filter((t) => (t.status || '').toLowerCase() === 'en proceso').length,
+    resueltos: tickets.filter((t) => ['resuelto', 'cerrado'].includes((t.status || '').toLowerCase())).length,
+  }), [tickets]);
+
+  const hasFilters = Boolean(search || filterStatus || filterPriority || filterArea);
+
+  const clearFilters = () => {
+    setSearch('');
+    setFilterStatus('');
+    setFilterPriority('');
+    setFilterArea('');
+    setPage(1);
+  };
+
+  const applyStatusFilter = (status) => {
+    setFilterStatus(status);
+    setPage(1);
+  };
 
   return (
     <AppLayout>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        
-        {/* Header Superior */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <div>
-            <h1 style={{ fontSize: '1.6rem', fontWeight: 700, color: '#0d4b75', margin: 0 }}>📌 Estado de Tickets</h1>
-            <p style={{ fontSize: '0.85rem', color: '#6c757d', marginTop: '4px' }}>
-              Consulta y actualiza el estado de cada solicitud en tiempo real
-            </p>
-          </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button 
-              type="button"
-              onClick={() => navigate('/generar-ticket')}
-              style={{ 
-                background: '#2563eb', 
-                color: '#ffffff', 
-                border: 'none', 
-                padding: '10px 20px', 
-                borderRadius: '6px', 
-                fontWeight: 600, 
-                fontSize: '0.85rem', 
-                cursor: 'pointer',
-                boxShadow: '0 2px 4px rgba(0,123,255,0.2)'
-              }}>
-              + Generar Ticket
-            </button>
-            <button 
-              type="button"
-              onClick={fetchTickets}
-              style={{ 
-                background: 'var(--card-bg, #ffffff)', 
-                color: '#28a745', 
-                border: '1px solid #28a745', 
-                padding: '10px 20px', 
-                borderRadius: '6px', 
-                fontWeight: 600, 
-                fontSize: '0.85rem', 
-                cursor: 'pointer' 
-              }}>
-              🔄 Actualizar
-            </button>
-          </div>
-        </div>
+      <div className="page page--tickets">
+        <PageHeader
+          eyebrow="Solicitudes"
+          title="Gestión de solicitudes"
+          subtitle="Consulta, filtra y actualiza el estado de los tickets registrados en el sistema."
+          actions={(
+            <>
+              <button
+                type="button"
+                className="btn btn--secondary"
+                onClick={fetchTickets}
+                disabled={loading}
+              >
+                <RefreshCw size={16} aria-hidden="true" />
+                Actualizar
+              </button>
+              <button
+                type="button"
+                className="btn btn--primary"
+                onClick={() => navigate('/generar-ticket')}
+              >
+                <Plus size={16} aria-hidden="true" />
+                Nueva solicitud
+              </button>
+            </>
+          )}
+        />
 
         <ErrorBanner message={error} />
 
-        {/* Filtros */}
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-          <div style={{ position: 'relative', flex: 1, minWidth: '220px' }}>
-            <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>BUSCAR</label>
-            <input
-              type="text"
-              placeholder="🔍 Buscar por título o ID..."
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #ced4da', fontSize: '0.85rem', boxSizing: 'border-box' }}
-            />
-            {search && (
-              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--card-bg, #ffffff)', color: '#1e293b', border: '1px solid #cbd5e1', borderRadius: '6px', boxShadow: '0 6px 14px rgba(0,0,0,0.1)', zIndex: 20, maxHeight: '180px', overflowY: 'auto' }}>
-                {tickets.filter(t => t.title.toLowerCase().includes(search.toLowerCase()) || String(t.id).includes(search)).slice(0, 6).map(t => (
-                  <div key={t.id} onClick={() => { setSearch(t.title); setPage(1); }} style={{ padding: '8px 12px', cursor: 'pointer', fontSize: '0.82rem', borderBottom: '1px solid #f1f5f9', color: '#1e293b' }}>
-                    <strong>#{t.id}</strong> {t.title}
-                  </div>
-                ))}
-                {tickets.filter(t => t.title.toLowerCase().includes(search.toLowerCase()) || String(t.id).includes(search)).length === 0 && (
-                  <div style={{ padding: '8px 12px', fontSize: '0.82rem', color: '#64748b' }}>Sin coincidencias</div>
-                )}
-              </div>
-            )}
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>ESTADO</label>
-            <select value={filterStatus} onChange={(e) => { setFilterStatus(e.target.value); setPage(1); }} style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #ced4da', fontSize: '0.85rem' }}>
-              <option value="">Todos los estados</option>
-              <option value="Abierto">Abierto</option>
-              <option value="En proceso">En proceso</option>
-              <option value="Resuelto">Resuelto</option>
-              <option value="Cerrado">Cerrado</option>
-            </select>
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>PRIORIDAD</label>
-            <select value={filterPriority} onChange={(e) => { setFilterPriority(e.target.value); setPage(1); }} style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #ced4da', fontSize: '0.85rem' }}>
-              <option value="">Todas las prioridades</option>
-              <option value="Baja">Baja</option>
-              <option value="Media">Media</option>
-              <option value="Alta">Alta</option>
-              <option value="Urgente">Urgente</option>
-            </select>
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>ÁREA</label>
-            <select value={filterArea} onChange={(e) => { setFilterArea(e.target.value); setPage(1); }} style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #ced4da', fontSize: '0.85rem' }}>
-              <option value="">Todas las áreas</option>
-              {areas.map((a) => (
-                <option key={a.id} value={a.name}>{a.name}</option>
-              ))}
-            </select>
-          </div>
+        <div className="tickets-body">
+        <div className="stat-grid stat-grid--4">
+          <StatCard
+            label="Total"
+            value={counts.total}
+            hint="Solicitudes registradas"
+            icon={TicketIcon}
+            tone="brand"
+            onClick={() => applyStatusFilter('')}
+          />
+          <StatCard
+            label="Abiertas"
+            value={counts.abiertos}
+            hint="Pendientes de atención"
+            icon={Inbox}
+            tone="info"
+            onClick={() => applyStatusFilter('Abierto')}
+          />
+          <StatCard
+            label="En proceso"
+            value={counts.proceso}
+            hint="En gestión actualmente"
+            icon={Clock}
+            tone="warning"
+            onClick={() => applyStatusFilter('En proceso')}
+          />
+          <StatCard
+            label="Resueltas / cerradas"
+            value={counts.resueltos}
+            hint="Atendidas o finalizadas"
+            icon={CheckCircle2}
+            tone="success"
+            onClick={() => applyStatusFilter('Resuelto')}
+          />
         </div>
 
-        {/* Tabla Estilizada con Mismo Diseño del Dashboard */}
-        <div style={{ background: 'var(--card-bg, #ffffff)', padding: '20px', borderRadius: '10px', border: '1px solid #e9ecef', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', borderTop: '4px solid #0d6efd' }}>
-          {loading ? (
-            <Loading />
-          ) : (
-            <div className="table-wrap">
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid #e9ecef', textAlign: 'left', color: '#495057', fontSize: '0.8rem', fontWeight: 700 }}>
-                  <th style={{ padding: '12px 8px' }}># ID</th>
-                  <th style={{ padding: '12px 8px' }}>TÍTULO</th>
-                  <th style={{ padding: '12px 8px' }}>ÁREA</th>
-                  <th style={{ padding: '12px 8px' }}>PRIORIDAD</th>
-                  <th style={{ padding: '12px 8px' }}>ESTADO ACTUAL</th>
-                  <th style={{ padding: '12px 8px' }}>CREADO</th>
-                  {puedeEditar && <th style={{ padding: '12px 8px', textAlign: 'center' }}>CAMBIAR ESTADO</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {filteredTickets.length === 0 ? (
-                  <tr>
-                    <td colSpan={puedeEditar ? "7" : "6"}><EmptyState icon="📋" message="No se encontraron tickets registrados." /></td>
-                  </tr>
-                ) : (
-                  pageTickets.map((t) => (
-                    <tr key={t.id} style={{ borderBottom: '1px solid #f1f3f5', cursor: 'pointer' }} onClick={() => setSelectedTicket(t)}>
-                      <td style={{ padding: '12px 8px', fontWeight: 700, color: '#0d4b75' }}>#{t.id}</td>
-                      <td style={{ padding: '12px 8px', fontWeight: 600, color: '#212529' }}>{t.title}</td>
-                      <td style={{ padding: '12px 8px', color: '#6c757d' }}>{t.area || 'Sin área'}</td>
-                      <td style={{ padding: '12px 8px' }}><PriorityBadge priority={t.priority} /></td>
-                      <td style={{ padding: '12px 8px' }}><StatusBadge status={t.status} /></td>
-                      <td style={{ padding: '12px 8px', color: '#6c757d' }}>
-                        {t.created_at ? new Date(t.created_at).toLocaleDateString() : 'N/A'}
-                      </td>
-                      {puedeEditar && (
-                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>
-                        <select 
-                          value={t.status} 
-                          disabled={updatingId === t.id}
-                          onClick={(e) => e.stopPropagation()}
-                          onChange={(e) => handleStatusChange(t, e.target.value)}
-                          style={{ 
-                            padding: '8px 12px', 
-                            borderRadius: '10px', 
-                            border: '1.5px solid #cbd5e1', 
-                            fontSize: '0.82rem', 
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            background: 'var(--card-bg, #ffffff)',
-                            minWidth: '140px'
-                          }}>
-                          <option value="Abierto">Abierto</option>
-                          <option value="En proceso">En proceso</option>
-                          <option value="Resuelto">Resuelto</option>
-                          <option value="Cerrado">Cerrado</option>
-                        </select>
-                      </td>
-                      )}
-                    </tr>
-                  ))
-                )}
-              </tbody>
-              </table>
-            </div>
-          )}
-
-          {/* Paginación */}
-          {!loading && totalPages > 1 && (
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '16px' }}>
-              <button disabled={page === 1} onClick={() => setPage(p => p - 1)} style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #ced4da', background: '#fff', cursor: 'pointer' }}>← Anterior</button>
-              <span style={{ padding: '6px 8px', fontSize: '0.85rem', color: '#495057' }}>Página {page} de {totalPages}</span>
-              <button disabled={page === totalPages} onClick={() => setPage(p => p + 1)} style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #ced4da', background: '#fff', cursor: 'pointer' }}>Siguiente →</button>
-            </div>
-          )}
-        </div>
-
-      </div>
-
-      {/* Modal de detalle */}
-      {selectedTicket && (
-        <div onClick={() => setSelectedTicket(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 100 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: '10px', padding: '28px 32px', maxWidth: '520px', width: '90%', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
-            <h2 style={{ marginTop: 0, color: '#0b4f78' }}>Ticket #{selectedTicket.id}</h2>
-            <p><strong>Título:</strong> {selectedTicket.title}</p>
-            <p><strong>Descripción:</strong> {selectedTicket.body || 'Sin descripción'}</p>
-            <p><strong>Área:</strong> {selectedTicket.area || 'Sin área'}</p>
-            <p><strong>Prioridad:</strong> {selectedTicket.priority}</p>
-            <p><strong>Estado:</strong> {selectedTicket.status}</p>
-            <p><strong>Creado:</strong> {selectedTicket.created_at ? new Date(selectedTicket.created_at).toLocaleString() : 'N/A'}</p>
-            <p><strong>Actualizado:</strong> {selectedTicket.updated_at ? new Date(selectedTicket.updated_at).toLocaleString() : 'N/A'}</p>
-            {selectedTicket.updated_by && (
-              <p><strong>Actualizado por:</strong> {selectedTicket.updated_by}</p>
-            )}
-            <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
-              <button onClick={() => setSelectedTicket(null)} style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '6px', fontWeight: 700, cursor: 'pointer' }}>Cerrar</button>
-              {puedeEditar && selectedTicket.status !== 'Cerrado' && (
+        <section className="card">
+          <div className="toolbar">
+            <div className="toolbar__search">
+              <Search size={16} className="toolbar__search-icon" aria-hidden="true" />
+              <input
+                type="search"
+                className="input"
+                placeholder="Buscar por título o número de ticket"
+                value={search}
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  setPage(1);
+                }}
+                aria-label="Buscar solicitudes"
+              />
+              {search && (
                 <button
+                  type="button"
+                  className="toolbar__clear"
                   onClick={() => {
-                    handleStatusChange(selectedTicket, 'Cerrado');
-                    setSelectedTicket(null);
+                    setSearch('');
+                    setPage(1);
                   }}
-                  style={{ background: '#64748b', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '6px', fontWeight: 700, cursor: 'pointer' }}
+                  aria-label="Limpiar búsqueda"
                 >
-                  🔒 Cerrar ticket
+                  <X size={14} />
+                </button>
+              )}
+
+              {search.trim() && (
+                <div className="search-suggestions">
+                  {suggestions.length === 0 ? (
+                    <div className="search-suggestions__empty">Sin coincidencias</div>
+                  ) : (
+                    suggestions.map((ticket) => (
+                      <button
+                        type="button"
+                        key={ticket.id}
+                        className="search-suggestions__item"
+                        onClick={() => {
+                          setSearch(ticket.title);
+                          setPage(1);
+                        }}
+                      >
+                        <span className="search-suggestions__id">#{ticket.id}</span>
+                        <span>{ticket.title}</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="toolbar__filters">
+              <label className="toolbar__field">
+                <span>Estado</span>
+                <select
+                  className="select select--sm"
+                  value={filterStatus}
+                  onChange={(event) => {
+                    setFilterStatus(event.target.value);
+                    setPage(1);
+                  }}
+                >
+                  <option value="">Todos</option>
+                  {STATUS_OPTIONS.map((status) => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="toolbar__field">
+                <span>Prioridad</span>
+                <select
+                  className="select select--sm"
+                  value={filterPriority}
+                  onChange={(event) => {
+                    setFilterPriority(event.target.value);
+                    setPage(1);
+                  }}
+                >
+                  <option value="">Todas</option>
+                  {PRIORITY_OPTIONS.map((priority) => (
+                    <option key={priority} value={priority}>{priority}</option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="toolbar__field">
+                <span>Área</span>
+                <select
+                  className="select select--sm"
+                  value={filterArea}
+                  onChange={(event) => {
+                    setFilterArea(event.target.value);
+                    setPage(1);
+                  }}
+                >
+                  <option value="">Todas</option>
+                  {areas.map((area) => (
+                    <option key={area.id} value={area.name}>{area.name}</option>
+                  ))}
+                </select>
+              </label>
+
+              {hasFilters && (
+                <button type="button" className="btn btn--ghost btn--sm" onClick={clearFilters}>
+                  Limpiar filtros
                 </button>
               )}
             </div>
           </div>
+
+          {loading ? (
+            <Loading text="Cargando solicitudes…" />
+          ) : (
+            <>
+              <div className="table-wrap">
+                <table className="data-table data-table--tickets">
+                  <thead>
+                    <tr>
+                      <th>Ticket</th>
+                      <th>Solicitud</th>
+                      <th>Área</th>
+                      <th>Prioridad</th>
+                      <th>Estado</th>
+                      <th>Creado</th>
+                      <th className="col-actions">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pageTickets.length === 0 ? (
+                      <tr>
+                        <td colSpan="7">
+                          <EmptyState
+                            icon={<Inbox size={22} />}
+                            message="No se encontraron solicitudes"
+                            hint={hasFilters
+                              ? 'Prueba con otros criterios de búsqueda o limpia los filtros.'
+                              : 'Aún no hay tickets registrados. Crea la primera solicitud.'}
+                          />
+                        </td>
+                      </tr>
+                    ) : (
+                      pageTickets.map((ticket) => (
+                        <tr
+                          key={ticket.id}
+                          className="is-clickable"
+                          onClick={() => setSelectedTicket(ticket)}
+                        >
+                          <td className="cell-id">#{ticket.id}</td>
+                          <td>
+                            <span className="cell-title" title={ticket.title}>{ticket.title}</span>
+                            <span className="cell-sub" title={ticket.body || ''}>
+                              {ticket.body || 'Sin descripción'}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="chip">{ticket.area || 'Sin área'}</span>
+                          </td>
+                          <td><PriorityBadge priority={ticket.priority} /></td>
+                          <td><StatusBadge status={ticket.status} /></td>
+                          <td className="cell-muted">
+                            <time dateTime={ticket.created_at || undefined}>
+                              {formatDate(ticket.created_at)}
+                            </time>
+                          </td>
+                          <td className="col-actions">
+                            <div
+                              className="cell-actions"
+                              onClick={(event) => event.stopPropagation()}
+                            >
+                              <button
+                                type="button"
+                                className="btn btn--ghost btn--sm"
+                                onClick={() => setSelectedTicket(ticket)}
+                                aria-label={`Ver detalle del ticket ${ticket.id}`}
+                              >
+                                <Eye size={15} aria-hidden="true" />
+                                Ver
+                              </button>
+
+                              {puedeEditar && (
+                                <select
+                                  className="select select--xs"
+                                  value={ticket.status}
+                                  disabled={updatingId === ticket.id}
+                                  aria-label={`Cambiar estado del ticket ${ticket.id}`}
+                                  onChange={async (event) => {
+                                    const nextStatus = event.target.value;
+                                    const updated = await handleStatusChange(ticket, nextStatus);
+                                    if (!updated) {
+                                      // Fuerza el re-render para restaurar el valor controlado.
+                                      setTickets((prev) => [...prev]);
+                                    }
+                                  }}
+                                >
+                                  {STATUS_OPTIONS.map((status) => (
+                                    <option key={status} value={status}>{status}</option>
+                                  ))}
+                                </select>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="table-footer">
+                <span className="table-footer__info">
+                  {filteredTickets.length === 0
+                    ? '0 solicitudes'
+                    : `Mostrando ${startIndex + 1}–${Math.min(startIndex + PAGE_SIZE, filteredTickets.length)} de ${filteredTickets.length} solicitudes`}
+                </span>
+
+                {totalPages > 1 && (
+                  <div className="pagination">
+                    <button
+                      type="button"
+                      className="pagination__btn"
+                      onClick={() => setPage((current) => Math.max(1, current - 1))}
+                      disabled={safePage === 1}
+                      aria-label="Página anterior"
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+                    <span className="pagination__pages">
+                      Página {safePage} de {totalPages}
+                    </span>
+                    <button
+                      type="button"
+                      className="pagination__btn"
+                      onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                      disabled={safePage === totalPages}
+                      aria-label="Página siguiente"
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </section>
         </div>
-      )}
+      </div>
+
+      <Modal
+        open={Boolean(selectedTicket)}
+        onClose={() => setSelectedTicket(null)}
+        title={selectedTicket ? `Ticket #${selectedTicket.id}` : 'Detalle del ticket'}
+        subtitle={selectedTicket?.title}
+        size="lg"
+        footer={selectedTicket ? (
+          <div className="modal__actions">
+            {puedeEditar && (
+              <label className="modal__status">
+                Estado
+                <select
+                  className="select select--sm"
+                  value={selectedTicket.status}
+                  disabled={updatingId === selectedTicket.id}
+                  onChange={async (event) => {
+                    const updated = await handleStatusChange(selectedTicket, event.target.value);
+                    if (!updated) setSelectedTicket((prev) => (prev ? { ...prev } : prev));
+                  }}
+                >
+                  {STATUS_OPTIONS.map((status) => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </label>
+            )}
+
+            {puedeEditar && selectedTicket.status !== 'Cerrado' && (
+              <button
+                type="button"
+                className="btn btn--secondary"
+                disabled={updatingId === selectedTicket.id}
+                onClick={() => handleCloseTicket(selectedTicket)}
+              >
+                <Lock size={15} aria-hidden="true" />
+                Cerrar ticket
+              </button>
+            )}
+
+            <button
+              type="button"
+              className="btn btn--primary"
+              onClick={() => setSelectedTicket(null)}
+            >
+              Volver al listado
+            </button>
+          </div>
+        ) : null}
+      >
+        {selectedTicket && (
+          <TicketDetail
+            ticket={selectedTicket}
+            puedeEditar={puedeEditar}
+          />
+        )}
+      </Modal>
     </AppLayout>
   );
 }
 
+function TicketDetail({ ticket, puedeEditar }) {
+  const [history, setHistory] = useState([]);
+  const [historyError, setHistoryError] = useState('');
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
+  useEffect(() => {
+    if (!puedeEditar) return undefined;
 
+    let active = true;
+    setLoadingHistory(true);
+    setHistoryError('');
 
+    apiFetch(`/tickets/${ticket.id}/history`)
+      .then(async (res) => {
+        if (!res.ok) throw new Error('No se pudo cargar el historial.');
+        const data = await res.json();
+        if (active) setHistory(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (active) setHistoryError('No se pudo cargar el historial de cambios.');
+      })
+      .finally(() => {
+        if (active) setLoadingHistory(false);
+      });
 
+    return () => {
+      active = false;
+    };
+  }, [ticket.id, puedeEditar]);
+
+  return (
+    <div className="ticket-detail">
+      <div className="ticket-detail__badges">
+        <StatusBadge status={ticket.status} />
+        <PriorityBadge priority={ticket.priority} />
+        <span className="chip chip--soft">{ticket.area || 'Sin área'}</span>
+      </div>
+
+      <div className="detail-grid">
+        <div className="detail-item">
+          <span className="detail-label">Área responsable</span>
+          <span className="detail-value">{ticket.area || 'Sin área'}</span>
+        </div>
+        <div className="detail-item">
+          <span className="detail-label">Creado</span>
+          <span className="detail-value">{formatDateTime(ticket.created_at)}</span>
+        </div>
+        <div className="detail-item">
+          <span className="detail-label">Última actualización</span>
+          <span className="detail-value">{formatDateTime(ticket.updated_at)}</span>
+        </div>
+        <div className="detail-item">
+          <span className="detail-label">Actualizado por</span>
+          <span className="detail-value">{ticket.updated_by || 'Sin actualizaciones'}</span>
+        </div>
+      </div>
+
+      <section className="detail-section">
+        <h3 className="detail-section__title">Descripción de la solicitud</h3>
+        <p className="detail-description">
+          {ticket.body || 'Esta solicitud no tiene descripción registrada.'}
+        </p>
+      </section>
+
+      <section className="detail-section">
+        <h3 className="detail-section__title">Historial de cambios</h3>
+
+        {!puedeEditar && (
+          <p className="muted-text">
+            El historial detallado está disponible para administradores y técnicos.
+          </p>
+        )}
+
+        {puedeEditar && loadingHistory && <Loading text="Cargando historial…" />}
+
+        {puedeEditar && !loadingHistory && historyError && (
+          <p className="muted-text">{historyError}</p>
+        )}
+
+        {puedeEditar && !loadingHistory && !historyError && history.length === 0 && (
+          <p className="muted-text">No hay cambios de estado registrados.</p>
+        )}
+
+        {puedeEditar && !loadingHistory && !historyError && history.length > 0 && (
+          <ol className="timeline">
+            {history.map((entry) => (
+              <li className="timeline__item" key={entry.id}>
+                <span className="timeline__dot" aria-hidden="true" />
+                <div className="timeline__content">
+                  <p className="timeline__title">
+                    {entry.old_status ? (
+                      <>Estado cambiado de <strong>{entry.old_status}</strong> a <strong>{entry.new_status}</strong></>
+                    ) : (
+                      <>Solicitud registrada en estado <strong>{entry.new_status}</strong></>
+                    )}
+                  </p>
+                  <p className="timeline__meta">
+                    Usuario #{entry.changed_by_id} · {formatDateTime(entry.changed_at)}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
+    </div>
+  );
+}

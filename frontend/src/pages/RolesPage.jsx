@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { Plus, Shield, Trash2 } from 'lucide-react';
 import AppLayout from '../layouts/AppLayout';
+import PageHeader from '../components/PageHeader';
 import { apiFetch } from '../apiClient';
-import { ErrorBanner, Loading } from '../components/Feedback';
+import { ErrorBanner, Loading, EmptyState } from '../components/Feedback';
 import { useToast } from '../context/ToastContext';
 
 export default function RolesPage() {
@@ -32,19 +34,25 @@ export default function RolesPage() {
         const res = await apiFetch('/auth/roles');
         if (!res.ok) throw new Error('No se pudieron cargar los roles.');
         const data = await res.json();
-        if (active) { setRoles(data); setError(''); }
+        if (active) {
+          setRoles(Array.isArray(data) ? data : []);
+          setError('');
+        }
       } catch (err) {
         if (active) setError(err.message);
       } finally {
         if (active) setLoading(false);
       }
     })();
-    return () => { active = false; };
+
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const handleDelete = async (r) => {
-    if (!window.confirm(`¿Eliminar el rol "${r.name}"?`)) return;
-    const res = await apiFetch(`/auth/roles/${r.id}`, { method: 'DELETE' });
+  const handleDelete = async (role) => {
+    if (!window.confirm(`¿Eliminar el rol "${role.name}"?`)) return;
+    const res = await apiFetch(`/auth/roles/${role.id}`, { method: 'DELETE' });
     if (res.ok) {
       showToast?.('Rol eliminado');
       fetchRoles();
@@ -54,10 +62,15 @@ export default function RolesPage() {
     }
   };
 
-  const handleCreate = async (e) => {
-    e.preventDefault();
+  const handleCreate = async (event) => {
+    event.preventDefault();
     if (!nombre.trim()) return;
-    const res = await apiFetch('/auth/roles', { method: 'POST', body: { name: nombre.trim(), description: descripcion.trim() || null } });
+
+    const res = await apiFetch('/auth/roles', {
+      method: 'POST',
+      body: { name: nombre.trim(), description: descripcion.trim() || null },
+    });
+
     if (res.ok) {
       showToast?.('Rol creado');
       setNombre('');
@@ -71,59 +84,137 @@ export default function RolesPage() {
 
   return (
     <AppLayout>
-      <div style={{ maxWidth: '640px', margin: '20px auto 0', background: '#fff', padding: '28px 32px', borderRadius: '10px', border: '1px solid #e9ecef', borderTop: '4px solid #0d6efd' }}>
-        <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0d4b75', marginTop: 0 }}>🛡️ Gestión de Roles</h2>
-        <p style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '-8px', marginBottom: '18px' }}>Roles disponibles y descripción de cada uno.</p>
+      <div className="page page--form page--split">
+        <PageHeader
+          eyebrow="Administración"
+          title="Roles"
+          subtitle="Define los perfiles de acceso disponibles y su descripción dentro del sistema."
+        />
+
         <ErrorBanner message={error} />
 
-        <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
-          <input
-            type="text" placeholder="Nombre del rol" value={nombre}
-            onChange={(e) => setNombre(e.target.value.toUpperCase())}
-            style={{ padding: '10px 14px', borderRadius: '6px', border: '1px solid #ced4da', textTransform: 'uppercase' }}
-          />
-          <input
-            type="text" placeholder="Descripción (opcional)" value={descripcion}
-            onChange={(e) => setDescripcion(e.target.value)}
-            style={{ padding: '10px 14px', borderRadius: '6px', border: '1px solid #ced4da' }}
-          />
-          <button type="submit" style={{ alignSelf: 'flex-start', background: '#2563eb', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '6px', fontWeight: 700, cursor: 'pointer' }}>+ Crear rol</button>
-        </form>
+        <div className="split-layout">
+          <section className="card">
+            <div className="card__header">
+              <div>
+                <h2 className="card__title">Nuevo rol</h2>
+                <p className="card__subtitle">El nombre se registrará en mayúsculas.</p>
+              </div>
+            </div>
 
-        {loading ? <Loading /> : (
-          <div className="table-wrap">
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid #e9ecef', textAlign: 'left', color: '#495057' }}>
-                <th style={{ padding: '10px 8px' }}>#</th>
-                <th style={{ padding: '10px 8px' }}>NOMBRE</th>
-                <th style={{ padding: '10px 8px' }}>DESCRIPCIÓN</th>
-                <th style={{ padding: '10px 8px', textAlign: 'center' }}>ACCIONES</th>
-              </tr>
-            </thead>
-            <tbody>
-              {roles.map((r) => (
-                <tr key={r.id} style={{ borderBottom: '1px solid #f1f3f5' }}>
-                  <td style={{ padding: '10px 8px', fontWeight: 700, color: '#0d4b75' }}>{r.id}</td>
-                  <td style={{ padding: '10px 8px' }}>{r.name}</td>
-                  <td style={{ padding: '10px 8px', color: '#6c757d' }}>{r.description || '—'}</td>
-                  <td style={{ padding: '10px 8px', textAlign: 'center' }}>
-                    <button onClick={() => handleDelete(r)} style={{ background: '#dc3545', color: '#fff', border: 'none', padding: '5px 12px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}>Eliminar</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          </div>
-        )}
+            <form className="card__body form-stack" onSubmit={handleCreate}>
+              <div className="field">
+                <label className="field__label" htmlFor="role-name">
+                  Nombre del rol <span className="field__req" aria-hidden="true">*</span>
+                </label>
+                <input
+                  id="role-name"
+                  className="input"
+                  type="text"
+                  placeholder="Ej.: SUPERVISOR"
+                  value={nombre}
+                  onChange={(event) => setNombre(event.target.value.toUpperCase())}
+                  required
+                  autoComplete="off"
+                />
+              </div>
+
+              <div className="field">
+                <label className="field__label" htmlFor="role-description">
+                  Descripción <span className="field__optional">(opcional)</span>
+                </label>
+                <input
+                  id="role-description"
+                  className="input"
+                  type="text"
+                  placeholder="Responsabilidades principales del rol"
+                  value={descripcion}
+                  onChange={(event) => setDescripcion(event.target.value)}
+                />
+                <p className="field__help">Ayuda a identificar el alcance del rol.</p>
+              </div>
+
+              <div className="form-actions">
+                <button type="submit" className="btn btn--primary">
+                  <Plus size={16} aria-hidden="true" />
+                  Crear rol
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <section className="card">
+            <div className="card__header">
+              <div>
+                <h2 className="card__title">Roles registrados</h2>
+                <p className="card__subtitle">
+                  {roles.length} {roles.length === 1 ? 'rol disponible' : 'roles disponibles'}
+                </p>
+              </div>
+              <span className="chip" aria-hidden="true">
+                <Shield size={14} />
+                Perfiles
+              </span>
+            </div>
+
+            {loading ? (
+              <Loading text="Cargando roles…" />
+            ) : (
+              <div className="table-wrap">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Rol</th>
+                      <th>Descripción</th>
+                      <th className="col-actions">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {roles.length === 0 ? (
+                      <tr>
+                        <td colSpan="4">
+                          <EmptyState
+                            icon={<Shield size={22} />}
+                            message="No hay roles registrados"
+                            hint="Crea el primer rol para organizar los permisos del sistema."
+                          />
+                        </td>
+                      </tr>
+                    ) : (
+                      roles.map((role) => (
+                        <tr key={role.id}>
+                          <td className="cell-id">{role.id}</td>
+                          <td>
+                            <span className="cell-title" title={role.name}>{role.name}</span>
+                          </td>
+                          <td>
+                            <span className="cell-sub" title={role.description || ''}>
+                              {role.description || 'Sin descripción'}
+                            </span>
+                          </td>
+                          <td className="col-actions">
+                            <div className="cell-actions">
+                              <button
+                                type="button"
+                                className="btn btn--danger btn--sm"
+                                onClick={() => handleDelete(role)}
+                              >
+                                <Trash2 size={14} aria-hidden="true" />
+                                Eliminar
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+        </div>
       </div>
     </AppLayout>
   );
 }
-
-
-
-
-
-
-

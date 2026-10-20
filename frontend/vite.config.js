@@ -26,6 +26,38 @@ export default defineConfig({
       "/metrics": apiProxy,
     },
   },
+  build: {
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return undefined;
+          if (id.includes("recharts") || id.includes("d3-")) return "vendor-charts";
+          if (
+            id.includes("jspdf")
+            || id.includes("html2canvas")
+            || id.includes("canvg")
+            || id.includes("dompurify")
+            || id.includes("fflate")
+            || id.includes("fast-png")
+            || id.includes("rgbcolor")
+            || id.includes("stackblur")
+            || id.includes("svg-pathdata")
+            || id.includes("css-line-break")
+            || id.includes("text-segmentation")
+            || id.includes("utrie")
+            || id.includes("raf")
+          ) {
+            return "vendor-pdf";
+          }
+          if (id.includes("exceljs")) return "vendor-excel";
+          if (id.includes("lucide")) return "vendor-icons";
+          if (id.includes("react")) return "vendor-react";
+          return "vendor";
+        },
+      },
+    },
+  },
   test: {
     environment: "jsdom",
     globals: true,

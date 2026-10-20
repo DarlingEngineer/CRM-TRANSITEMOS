@@ -1,21 +1,27 @@
 /* =========================================================
-   CRM TRANSITEMOS — Sistema de diseño global
-   Tokens + base + utilidades.
-   Nota: el login define su propia apariencia en LoginPage.css
-   y no se ve afectado por estas reglas.
+   CRM TRANSITEMOS — Base global
+   Tokens, reseteo y tipografía. Los componentes visuales viven
+   en src/components/ui.css (se importa después de este archivo).
    ========================================================= */
 
 :root {
-  /* Marca */
+  /* Marca institucional */
   --brand: #0b4f78;
+  --brand-strong: #083d73;
+  --brand-soft: #eaf2f9;
 
   /* Acentos */
   --primary: #2563eb;
   --primary-dark: #1d4ed8;
   --primary-soft: #eff6ff;
-  --success: #16a34a;
-  --danger: #dc2626;
-  --warning: #d97706;
+  --success: #15803d;
+  --success-soft: #dcfce7;
+  --danger: #b91c1c;
+  --danger-soft: #fee2e2;
+  --warning: #b45309;
+  --warning-soft: #fef3c7;
+  --info: #0369a1;
+  --info-soft: #e0f2fe;
 
   /* Neutros */
   --text: #1e293b;
@@ -23,17 +29,19 @@
   --heading: #0b4f78;
   --border: #e2e8f0;
   --border-strong: #cbd5e1;
-  --bg: #f8fafc;
+  --bg: #f4f7fb;
   --card-bg: #ffffff;
 
   /* Formas y sombras */
   --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --shadow-sm: 0 1px 3px rgba(15, 55, 100, 0.06);
-  --shadow-md: 0 6px 18px rgba(15, 55, 100, 0.08);
+  --radius-md: 9px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 8px 24px rgba(8, 61, 115, 0.1);
+  --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.18);
 
   --sans: 'Inter', 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+  --mono: 'JetBrains Mono', 'Cascadia Mono', 'Consolas', monospace;
   color-scheme: light;
 }
 
@@ -49,7 +57,8 @@ body,
   margin: 0;
   padding: 0;
   width: 100%;
-  min-height: 100vh;
+  height: 100%;
+  min-height: 100%;
   overflow-x: hidden;
 }
 
@@ -59,6 +68,7 @@ body {
   line-height: 1.5;
   color: var(--text);
   background: var(--bg);
+  overflow: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -71,11 +81,12 @@ h4 {
   color: var(--heading);
 }
 
-/* ---------- Controles ---------- */
+/* ---------- Controles base ---------- */
 input,
 select,
 textarea {
   font-family: inherit;
+  font-size: 0.9rem;
   color: var(--text);
   background: #ffffff;
   border: 1px solid var(--border-strong);
@@ -88,21 +99,17 @@ select:focus,
 textarea:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  box-shadow: var(--focus-ring);
 }
 
 button {
   font-family: inherit;
   border-radius: var(--radius-md);
-  font-weight: 700;
-  letter-spacing: 0.2px;
+  font-weight: 600;
+  letter-spacing: 0.1px;
   cursor: pointer;
-  transition: filter 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
-}
-
-button:not(:disabled):hover {
-  filter: brightness(1.06);
-  box-shadow: 0 4px 10px rgba(2, 62, 138, 0.15);
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease, color 0.15s ease, transform 0.1s ease;
 }
 
 button:disabled {
@@ -110,249 +117,26 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* ---------- Tablas ---------- */
-.table-wrap {
-  width: 100%;
-  overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-table thead th {
-  text-align: left;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #475569;
-  background: #f1f5f9;
-  border-bottom: 2px solid var(--border);
+/* ---------- Utilidades ---------- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
   white-space: nowrap;
+  border: 0;
 }
 
-table tbody tr {
-  transition: background 0.12s ease;
-}
-
-table tbody tr:hover {
-  background: #eaf3fb;
-}
-
-table tbody tr:nth-child(even) {
-  background: #fbfcfe;
-}
-
-table tbody tr:nth-child(even):hover {
-  background: #eaf3fb;
-}
-
-/* ---------- Shell de la aplicación ---------- */
-.app-layout {
-  background: var(--bg);
-}
-
-.app-layout main {
-  background: var(--bg);
-}
-
-.app-layout aside nav a {
-  text-decoration: none !important;
-  border-radius: var(--radius-md);
-  margin-bottom: 2px;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.app-layout aside nav a:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  color: #ffffff !important;
-}
-
-/* Barra de scroll discreta en el área de contenido */
-.app-layout main::-webkit-scrollbar {
-  width: 10px;
-}
-
-.app-layout main::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: var(--radius-md);
-}
-
-.app-layout main::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
-/* ---------- Responsive ---------- */
-@media (max-width: 768px) {
-  .app-layout aside {
-    width: 72px !important;
-  }
-
-  .app-layout aside nav a {
-    font-size: 0 !important;
-    justify-content: center;
-    padding: 8px 4px !important;
-  }
-
-  .app-layout aside nav a span {
-    font-size: 0.7rem !important;
-  }
-
-  .app-layout aside nav > div > div:first-child {
-    display: none !important;
-  }
-
-  .app-layout aside img {
-    width: 42px !important;
-  }
-
-  .app-layout main {
-    padding: 16px !important;
-  }
-}
-
-/* ---------- Tarjetas de gráficos ---------- */
-.chart-card {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  min-width: 0;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  padding: 16px 18px;
-  transition: box-shadow 0.2s ease;
-}
-
-.chart-card:hover {
-  box-shadow: var(--shadow-md);
-}
-
-.chart-card__title {
-  margin: 0;
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  color: #334155;
-}
-
-.chart-card__desc {
-  margin: 4px 0 0;
-  font-size: 0.76rem;
-  line-height: 1.45;
-  color: var(--text-muted);
-}
-
-.chart-card__body {
-  flex: 1;
-  min-height: 200px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-/* ---------- Grillas de KPIs y gráficos ---------- */
-.grid-kpis {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.grid-charts {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-auto-rows: 1fr;
-  align-items: stretch;
-  gap: 16px;
-}
-
-.grid-charts--reports {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-@media (max-width: 1100px) {
-  .grid-kpis {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .grid-charts {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 700px) {
-  .grid-kpis {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .grid-charts,
-  .grid-charts--reports {
-    grid-template-columns: 1fr;
-  }
-}
-
-.chart-card__footer {
-  border-top: 1px solid var(--border);
-  padding-top: 8px;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  text-align: center;
-}
-
-.chart-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  justify-content: center;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  margin-top: 10px;
-}
-
-.chart-legend span {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.chart-legend i {
-  width: 9px;
-  height: 9px;
-  border-radius: 999px;
-  display: inline-block;
-}
-
-/* ---------- Toasts ---------- */
-.toast {
-  color: #ffffff;
-  padding: 10px 16px;
-  border-radius: var(--radius-md);
-  font-size: 0.85rem;
-  font-weight: 600;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  animation: toast-in 0.18s ease-out;
-}
-
-.toast--success {
-  background: var(--success);
-}
-
-.toast--error {
-  background: var(--danger);
-}
-
-@keyframes toast-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

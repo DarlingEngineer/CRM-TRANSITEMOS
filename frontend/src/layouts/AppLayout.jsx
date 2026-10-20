@@ -1,25 +1,109 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, PlusCircle, ListChecks, BarChart3, Building2, Users, Shield } from 'lucide-react';
+import {
+  LayoutDashboard,
+  PlusCircle,
+  ListChecks,
+  BarChart3,
+  Building2,
+  Users,
+  Shield,
+  Menu,
+  X,
+  LogOut,
+} from 'lucide-react';
 import logoImg from '../assets/logo.png';
 import { useAuth } from '../context/AuthContext';
 import { apiFetch } from '../apiClient';
+
+const SECTION_TITLES = {
+  '/dashboard': 'Dashboard',
+  '/generar-ticket': 'Nueva solicitud',
+  '/crear-ticket': 'Nueva solicitud',
+  '/tickets': 'Gestión de solicitudes',
+  '/reportes': 'Reportes y KPIs',
+  '/areas': 'Áreas',
+  '/usuarios': 'Usuarios',
+  '/roles': 'Roles',
+};
+
+function initials(name = '') {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return 'U';
+  return (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase();
+}
 
 export default function AppLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, role, logout } = useAuth() || {};
   const [abiertos, setAbiertos] = useState(0);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
+    let active = true;
     apiFetch('/tickets/?limit=100')
       .then(async (res) => {
         if (!res.ok) return;
         const data = await res.json();
-        if (Array.isArray(data)) setAbiertos(data.filter((t) => (t.status || '').toLowerCase() === 'abierto').length);
+        if (active && Array.isArray(data)) {
+          setAbiertos(data.filter((t) => (t.status || '').toLowerCase() === 'abierto').length);
+        }
       })
       .catch(() => {});
+    return () => {
+      active = false;
+    };
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!sidebarOpen) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setSidebarOpen(false);
+    };
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [sidebarOpen]);
+
+  const navGroups = useMemo(
+    () => [
+      {
+        label: 'Principal',
+        items: [
+          { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        ],
+      },
+      {
+        label: 'Solicitudes',
+        items: [
+          { to: '/generar-ticket', label: 'Nueva solicitud', icon: PlusCircle },
+          { to: '/tickets', label: 'Gestión de solicitudes', icon: ListChecks, badge: abiertos },
+        ],
+      },
+      ...(role === 'admin'
+        ? [
+            {
+              label: 'Administración',
+              items: [
+                { to: '/reportes', label: 'Reportes y KPIs', icon: BarChart3 },
+                { to: '/areas', label: 'Áreas', icon: Building2 },
+                { to: '/usuarios', label: 'Usuarios', icon: Users },
+                { to: '/roles', label: 'Roles', icon: Shield },
+              ],
+            },
+          ]
+        : []),
+    ],
+    [role, abiertos],
+  );
 
   const handleLogout = () => {
     logout?.();
@@ -27,158 +111,114 @@ export default function AppLayout({ children }) {
   };
 
   const isActive = (path) => location.pathname === path;
+  const pageTitle = SECTION_TITLES[location.pathname] || 'CRM Transitemos';
+  const userName = user?.username || 'Usuario';
+  const roleLabel = role || 'usuario';
 
   return (
-    <div style={{
-      display: 'flex',
-      height: '100vh',
-      width: '100%',
-      margin: 0,
-      padding: 0,
-      background: '#f8fafc',
-      fontFamily: "'Segoe UI', system-ui, sans-serif",
-      overflow: 'hidden', // Desactiva scrollbars globales
-    }}
-      className="app-layout">
-      
-      {/* BARRA LATERAL AZUL 3D FIJA AL 100% DE ALTURA */}
-      <aside style={{
-        width: '240px',
-        transition: 'width 0.2s ease',
-        height: '100vh',
-        flexShrink: 0,
-        background: 'linear-gradient(180deg, #0b5fa5 0%, #0a4f94 60%, #083d73 100%)',
-        color: '#ffffff',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        boxShadow: 'inset -8px 0 20px rgba(0, 0, 0, 0.18)',
-        zIndex: 10,
-        boxSizing: 'border-box'
-      }}>
+    <div className="app-layout">
+      {sidebarOpen && (
+        <button
+          type="button"
+          className="sidebar-overlay"
+          aria-label="Cerrar menú de navegación"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <aside className={`sidebar${sidebarOpen ? ' is-open' : ''}`}>
         <div>
-          {/* LOGO INSTITUCIONAL */}
-          <div style={{ padding: '20px 16px 16px', textAlign: 'center' }}>
-            <img 
-              src={logoImg} 
-              alt="Tránsito de Mosquera" 
-              style={{
-                width: '125px',
-                height: 'auto',
-                display: 'block',
-                margin: '0 auto 6px',
-                filter: 'brightness(0) invert(1) drop-shadow(0 4px 8px rgba(0,0,0,0.25))'
-              }} 
-            />
-          <div style={{ fontSize: '0.62rem', letterSpacing: '2px', color: 'rgba(255,255,255,0.5)', fontFamily: 'monospace' }}>
-            TRANSITEMOS • 2026
+          <div className="sidebar__brand">
+            <img src={logoImg} alt="Tránsito de Mosquera" className="sidebar__logo" />
+            <span className="sidebar__brand-name">Transitemos</span>
+            <span className="sidebar__brand-sub">Gestión de solicitudes</span>
           </div>
-        </div>
 
-        {/* MENÚ NAVEGACIÓN */}
-        <nav style={{ padding: '0 12px', fontSize: '0.78rem' }}>
-          {/* PRINCIPAL */}
-            <div style={{ marginBottom: '14px' }}>
-              <div style={{ fontSize: '0.65rem', fontWeight: 800, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', padding: '0 8px 6px', letterSpacing: '0.8px' }}>
-                PRINCIPAL
+          <nav className="sidebar__nav" aria-label="Navegación principal">
+            {navGroups.map((group) => (
+              <div className="nav-section" key={group.label}>
+                <div className="nav-section__label">{group.label}</div>
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(item.to);
+                  return (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      className={`nav-link${active ? ' is-active' : ''}`}
+                      aria-current={active ? 'page' : undefined}
+                      onClick={() => setSidebarOpen(false)}
+                    >
+                      <span className="nav-link__icon" aria-hidden="true">
+                        <Icon size={17} />
+                      </span>
+                      <span className="nav-link__text">{item.label}</span>
+                      {item.badge > 0 && (
+                        <span className="nav-link__badge" aria-label={`${item.badge} tickets abiertos`}>
+                          {item.badge > 99 ? '99+' : item.badge}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
               </div>
-              <Link 
-                to="/dashboard" 
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '10px', padding: '7px 12px', borderRadius: '6px', textDecoration: 'none', fontWeight: 600,
-                  color: '#ffffff', background: isActive('/dashboard') ? '#1d78c8' : 'transparent',
-                  borderLeft: isActive('/dashboard') ? '3px solid #38bdf8' : '3px solid transparent'
-                }}
-              >
-                <LayoutDashboard size={18} /> Dashboard
-              </Link>
-            </div>
-
-            {/* MÓDULOS */}
-            <div style={{ marginBottom: '14px' }}>
-              <div style={{ fontSize: '0.65rem', fontWeight: 800, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', padding: '0 8px 6px', letterSpacing: '0.8px' }}>
-                MÓDULOS
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <Link 
-                  to="/generar-ticket" 
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '10px', padding: '7px 12px', borderRadius: '6px', textDecoration: 'none', fontWeight: 600,
-                    color: isActive('/generar-ticket') ? '#ffffff' : 'rgba(255,255,255,0.8)',
-                    background: isActive('/generar-ticket') ? '#1d78c8' : 'transparent',
-                    borderLeft: isActive('/generar-ticket') ? '3px solid #38bdf8' : '3px solid transparent'
-                  }}
-                >
-                  <PlusCircle size={18} /> Generar Ticket
-                </Link>
-                <Link 
-                  to="/tickets" 
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '10px', padding: '7px 12px', borderRadius: '6px', textDecoration: 'none', fontWeight: 600,
-                    color: isActive('/tickets') ? '#ffffff' : 'rgba(255,255,255,0.8)',
-                    background: isActive('/tickets') ? '#1d78c8' : 'transparent',
-                    borderLeft: isActive('/tickets') ? '3px solid #38bdf8' : '3px solid transparent'
-                  }}
-                >
-                  <ListChecks size={18} /> Estado de Tickets {abiertos > 0 && (<span style={{ background: '#dc3545', color: '#fff', borderRadius: '10px', padding: '1px 8px', fontSize: '0.7rem', fontWeight: 800, marginLeft: '6px' }}>{abiertos}</span>)}
-                </Link>
-              </div>
-            </div>
-
-            {/* ADMINISTRACIÓN: solo visible para admin */}
-            {role === 'admin' && (
-            <div style={{ marginBottom: '14px' }}>
-              <div style={{ fontSize: '0.65rem', fontWeight: 800, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', padding: '0 8px 6px', letterSpacing: '0.8px' }}>
-                ADMINISTRACIÓN
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <Link to="/reportes" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontWeight: 600 }}><BarChart3 size={16} /> Reportes y KPIs</Link>
-                <Link to="/areas" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontWeight: 600 }}><Building2 size={16} /> Áreas</Link>
-                <Link to="/usuarios" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontWeight: 600 }}><Users size={16} /> Usuarios</Link>
-                <Link to="/roles" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontWeight: 600 }}><Shield size={16} /> Roles</Link>
-              </div>
-            </div>
-            )}
-
+            ))}
           </nav>
         </div>
 
-        {/* PERFIL INFERIOR */}
-        <div style={{ padding: '24px 14px', background: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
-          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#ffffff' }}>{user?.username || 'Usuario'}</div>
-          <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)', marginBottom: '8px' }}>{user?.username || ''} • {(role || '').toUpperCase()}</div>
-          <div style={{ marginBottom: '8px' }}></div>
-          <button 
-            onClick={handleLogout}
-            style={{ width: '100%', padding: '6px', background: 'transparent', border: '1px solid rgba(255,255,255,0.25)', borderRadius: '6px', color: '#ffffff', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
-          >
-            ✕ Cerrar sesión
+        <div className="sidebar__footer">
+          <div className="user-card">
+            <span className="user-card__avatar" aria-hidden="true">{initials(userName)}</span>
+            <div className="user-card__meta">
+              <div className="user-card__name">{userName}</div>
+              <div className="user-card__role">{roleLabel}</div>
+            </div>
+          </div>
+          <button type="button" className="btn-logout" onClick={handleLogout}>
+            <LogOut size={15} aria-hidden="true" />
+            Cerrar sesión
           </button>
         </div>
       </aside>
 
-      {/* ÁREA PRINCIPAL CON SCROLL VERTICAL AUTOMÁTICO SOLAMENTE */}
-      <main style={{ 
-        flex: 1, 
-        minWidth: 0, 
-        height: '100vh', 
-        overflowY: 'auto', 
-        overflowX: 'hidden', 
-        padding: '20px 24px', 
-        boxSizing: 'border-box',
-        background: '#f8fafc',
-      }}>
-        {children}
-      </main>
+      <div className="app-main">
+        <header className="topbar">
+          <button
+            type="button"
+            className="topbar__menu"
+            aria-label={sidebarOpen ? 'Cerrar menú' : 'Abrir menú'}
+            aria-expanded={sidebarOpen}
+            onClick={() => setSidebarOpen((open) => !open)}
+          >
+            {sidebarOpen ? <X size={19} /> : <Menu size={19} />}
+          </button>
 
+          <div className="topbar__heading">
+            <span className="topbar__eyebrow">CRM Transitemos</span>
+            <span className="topbar__title">{pageTitle}</span>
+          </div>
+
+          <span className="topbar__spacer" />
+
+          <div className="topbar__user">
+            <div className="topbar__user-meta">
+              <span className="topbar__user-name">{userName}</span>
+              <span className="topbar__user-role">{roleLabel}</span>
+            </div>
+            <button
+              type="button"
+              className="topbar__logout"
+              onClick={handleLogout}
+              aria-label="Cerrar sesión"
+              title="Cerrar sesión"
+            >
+              <LogOut size={17} />
+            </button>
+          </div>
+        </header>
+
+        <main className="app-content">{children}</main>
+      </div>
     </div>
   );
 }
-
-
-
-
-
-
-
-

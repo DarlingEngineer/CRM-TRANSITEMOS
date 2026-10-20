@@ -1,0 +1,1843 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "workflow",
+  "quality": "showcase",
+  "startedAt": "2026-10-20T19:47:05.777Z",
+  "specification": {
+    "path": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\flujo-reportes.workflow.json",
+    "sha256": "67161529a29ab69766d53c973b8dc251b1da9b3d1a33f4d52becca4589124af1",
+    "bytes": 34731
+  },
+  "artifact": {
+    "path": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\flujo-reportes.html",
+    "sha256": "29031e4573785dd47b93cb02dad7f8fe420e9a26df11d52d702fe2cda896aeca",
+    "bytes": 831888
+  },
+  "stages": {
+    "validate": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": null,
+      "execution": "embedded-in-deliver",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\SISTEMAS\\AppData\\Local\\Temp\\opencode\\archify-full\\archify\\bin\\archify.mjs",
+        "deliver",
+        "workflow",
+        "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\flujo-reportes.workflow.json",
+        "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\flujo-reportes.html",
+        "--quality",
+        "showcase",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "ok": true,
+        "command": "validate",
+        "specification": {
+          "sha256": "67161529a29ab69766d53c973b8dc251b1da9b3d1a33f4d52becca4589124af1",
+          "bytes": 34731
+        },
+        "validation": {
+          "checksPassed": 9,
+          "checkCount": 9,
+          "compositionProfile": "showcase",
+          "compositionStatus": "pass",
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    "deliver": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 902,
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\SISTEMAS\\AppData\\Local\\Temp\\opencode\\archify-full\\archify\\bin\\archify.mjs",
+        "deliver",
+        "workflow",
+        "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\flujo-reportes.workflow.json",
+        "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\flujo-reportes.html",
+        "--quality",
+        "showcase",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "receiptId": "c13659c3-6e8c-48e7-9aab-9f367977d515",
+        "ok": true,
+        "command": "deliver",
+        "type": "workflow",
+        "input": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\flujo-reportes.workflow.json",
+        "output": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\flujo-reportes.html",
+        "specification": {
+          "sha256": "67161529a29ab69766d53c973b8dc251b1da9b3d1a33f4d52becca4589124af1",
+          "bytes": 34731
+        },
+        "artifact": {
+          "sha256": "29031e4573785dd47b93cb02dad7f8fe420e9a26df11d52d702fe2cda896aeca",
+          "bytes": 831888
+        },
+        "validation": {
+          "checksPassed": 9,
+          "checkCount": 9,
+          "compositionProfile": "showcase",
+          "compositionStatus": "pass",
+          "errors": 0,
+          "warnings": 0
+        },
+        "update": {
+          "status": "unavailable",
+          "installedVersion": null,
+          "availableVersion": null,
+          "releaseNotes": null,
+          "checkedAt": null,
+          "source": null,
+          "noticeRequired": false,
+          "noticeText": null,
+          "reason": "disabled"
+        }
+      }
+    },
+    "check": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 304,
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\SISTEMAS\\AppData\\Local\\Temp\\opencode\\archify-full\\archify\\bin\\archify.mjs",
+        "check",
+        "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\flujo-reportes.html",
+        "--require-provenance"
+      ],
+      "receipt": {
+        "ok": true,
+        "file": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\flujo-reportes.html",
+        "artifact": {
+          "sha256": "29031e4573785dd47b93cb02dad7f8fe420e9a26df11d52d702fe2cda896aeca",
+          "bytes": 831888
+        },
+        "checks": [
+          {
+            "name": "single_svg",
+            "ok": true,
+            "details": [
+              "found 1 <svg> block(s)"
+            ]
+          },
+          {
+            "name": "finite_svg",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "orthogonal_arrows",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "label_route_clearance",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "relationship_crossings",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "relationship_corridors",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "container_border_runs",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "route_rhythm",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "legend_clearance",
+            "ok": true,
+            "details": []
+          }
+        ],
+        "composition": {
+          "schemaVersion": 1,
+          "profile": "showcase",
+          "status": "pass",
+          "summary": {
+            "errors": 0,
+            "warnings": 0
+          },
+          "metrics": {
+            "properCrossings": 0,
+            "resolvedCrossovers": 0,
+            "ambiguousCorridors": 0,
+            "arrowheadCollisions": 0,
+            "containerBorderRuns": 0,
+            "labelRouteClearanceIssues": 0,
+            "labelCanvasOverflowIssues": 0,
+            "minLabelRouteClearance": 50.4,
+            "desktopReadabilityIssues": 0,
+            "viewportHeightIssues": 0,
+            "minProjectedNodeTextPx": 6.259615384615385,
+            "maxBends": 0,
+            "routesOverSuggestedBends": 0,
+            "maxStretch": 1,
+            "routesOverSuggestedStretch": 0,
+            "minSegmentPx": 8,
+            "minInteriorSegmentPx": null,
+            "shortSegmentCount": 3,
+            "shortEndpointSegmentCount": 3,
+            "shortInteriorSegmentCount": 0,
+            "microSegmentCount": 0
+          },
+          "suggestedLimits": {
+            "bendsPerRelationship": 2,
+            "stretch": 1.35,
+            "segmentPx": 16,
+            "microSegmentPx": 8
+          },
+          "routeReview": {
+            "crossings": [],
+            "detours": []
+          },
+          "leadingSpace": {
+            "measured": false,
+            "reviewSuggested": false
+          },
+          "desktopReadability": {
+            "budgetBasis": "legacy-930",
+            "readerContract": "declared-wide-v1",
+            "availableDiagramWidth": 930,
+            "actualBudgetPx": 930,
+            "limit": "legacy",
+            "requestedTargetPx": null,
+            "requestedTargetMet": null,
+            "hardFloorPx": 6,
+            "hardFloorMet": true,
+            "minimumOwner": {
+              "kind": "node",
+              "id": "descarga_excel"
+            },
+            "minimumSourceTextPx": 6.3,
+            "minimumProjectedTextPx": 6.259615384615385,
+            "semanticTextCount": 31
+          },
+          "issues": []
+        },
+        "provenance": "current",
+        "deliveryReceiptId": "c13659c3-6e8c-48e7-9aab-9f367977d515"
+      }
+    },
+    "browser-check": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 2110,
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\SISTEMAS\\AppData\\Local\\Temp\\opencode\\archify-full\\archify\\bin\\archify.mjs",
+        "browser-check",
+        "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\flujo-reportes.html",
+        "--json",
+        "--require-provenance",
+        "--out-dir",
+        "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify"
+      ],
+      "execution": "in-process",
+      "receipt": {
+        "schemaVersion": 1,
+        "ok": true,
+        "command": "browser-check",
+        "evidenceKind": "automated-browser",
+        "status": "pass",
+        "visualReview": "not-requested",
+        "provenance": "current",
+        "deliveryReceiptId": "c13659c3-6e8c-48e7-9aab-9f367977d515",
+        "artifact": {
+          "path": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\flujo-reportes.html",
+          "sha256": "29031e4573785dd47b93cb02dad7f8fe420e9a26df11d52d702fe2cda896aeca",
+          "bytes": 831888
+        },
+        "state": {
+          "detail": "read",
+          "motion": "still"
+        },
+        "chrome": {
+          "status": "available",
+          "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+        },
+        "diagnostics": [],
+        "containment": {
+          "status": "pass",
+          "policy": "fit-or-reader-declared-readable-vertical-scroll",
+          "viewports": [
+            {
+              "width": 1440,
+              "height": 900,
+              "theme": "light",
+              "innerWidth": 1440,
+              "innerHeight": 900,
+              "scrollWidth": 1440,
+              "scrollHeight": 1462,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1376,
+              "diagramWidth": 1346,
+              "pageComposition": {
+                "bodyPaddingPx": 12,
+                "headerPx": 78,
+                "diagramChromePx": 78,
+                "svgPx": 1294,
+                "cardsPx": 0,
+                "viewBoxHeight": 900
+              },
+              "viewBoxWidth": 936,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 150,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "accion"
+                  ],
+                  "nodeSpanPx": 75,
+                  "spaceAboveNodesPx": 59,
+                  "spaceBelowNodesPx": 16
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 150,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "pagina",
+                    "feedback"
+                  ],
+                  "nodeSpanPx": 75,
+                  "spaceAboveNodesPx": 59,
+                  "spaceBelowNodesPx": 16
+                },
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 150,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "metricas",
+                    "tickets"
+                  ],
+                  "nodeSpanPx": 75,
+                  "spaceAboveNodesPx": 59,
+                  "spaceBelowNodesPx": 16
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 150,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "modelo"
+                  ],
+                  "nodeSpanPx": 75,
+                  "spaceAboveNodesPx": 59,
+                  "spaceBelowNodesPx": 16
+                },
+                {
+                  "frameId": "lane-4",
+                  "heightPx": 150,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_excel",
+                    "descarga_excel"
+                  ],
+                  "nodeSpanPx": 75,
+                  "spaceAboveNodesPx": 59,
+                  "spaceBelowNodesPx": 16
+                },
+                {
+                  "frameId": "lane-5",
+                  "heightPx": 150,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_pdf",
+                    "descarga_pdf"
+                  ],
+                  "nodeSpanPx": 75,
+                  "spaceAboveNodesPx": 59,
+                  "spaceBelowNodesPx": 16
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.3,
+              "minimumProjectedNonEdgeTextPx": 6.3,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Blob + enlace temporal",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "descarga_excel"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 1600,
+              "height": 1000,
+              "theme": "light",
+              "innerWidth": 1600,
+              "innerHeight": 1000,
+              "scrollWidth": 1600,
+              "scrollHeight": 1584,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1536,
+              "diagramWidth": 1404,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 86,
+                "diagramChromePx": 84,
+                "svgPx": 1350,
+                "cardsPx": 0,
+                "viewBoxHeight": 900
+              },
+              "viewBoxWidth": 936,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 156,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "accion"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "pagina",
+                    "feedback"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "metricas",
+                    "tickets"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 156,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "modelo"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-4",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_excel",
+                    "descarga_excel"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-5",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_pdf",
+                    "descarga_pdf"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.3,
+              "minimumProjectedNonEdgeTextPx": 6.3,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Blob + enlace temporal",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "descarga_excel"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 1920,
+              "height": 1080,
+              "theme": "light",
+              "innerWidth": 1920,
+              "innerHeight": 1080,
+              "scrollWidth": 1920,
+              "scrollHeight": 1584,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1856,
+              "diagramWidth": 1404,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 86,
+                "diagramChromePx": 84,
+                "svgPx": 1350,
+                "cardsPx": 0,
+                "viewBoxHeight": 900
+              },
+              "viewBoxWidth": 936,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 156,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "accion"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "pagina",
+                    "feedback"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "metricas",
+                    "tickets"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 156,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "modelo"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-4",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_excel",
+                    "descarga_excel"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-5",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_pdf",
+                    "descarga_pdf"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.3,
+              "minimumProjectedNonEdgeTextPx": 6.3,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Blob + enlace temporal",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "descarga_excel"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 2048,
+              "height": 1320,
+              "theme": "light",
+              "innerWidth": 2048,
+              "innerHeight": 1320,
+              "scrollWidth": 2048,
+              "scrollHeight": 1602,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1920,
+              "diagramWidth": 1404,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 94,
+                "diagramChromePx": 94,
+                "svgPx": 1350,
+                "cardsPx": 0,
+                "viewBoxHeight": 900
+              },
+              "viewBoxWidth": 936,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 156,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "accion"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "pagina",
+                    "feedback"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "metricas",
+                    "tickets"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 156,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "modelo"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-4",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_excel",
+                    "descarga_excel"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-5",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_pdf",
+                    "descarga_pdf"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.3,
+              "minimumProjectedNonEdgeTextPx": 6.3,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Blob + enlace temporal",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "descarga_excel"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 44,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            }
+          ]
+        },
+        "themeStates": {
+          "status": "pass",
+          "viewports": [
+            {
+              "width": 1440,
+              "height": 900,
+              "requestedTheme": "light",
+              "resolvedTheme": "light",
+              "ok": true
+            },
+            {
+              "width": 1600,
+              "height": 1000,
+              "requestedTheme": "light",
+              "resolvedTheme": "light",
+              "ok": true
+            },
+            {
+              "width": 1920,
+              "height": 1080,
+              "requestedTheme": "light",
+              "resolvedTheme": "light",
+              "ok": true
+            },
+            {
+              "width": 2048,
+              "height": 1320,
+              "requestedTheme": "light",
+              "resolvedTheme": "light",
+              "ok": true
+            },
+            {
+              "width": 1440,
+              "height": 900,
+              "requestedTheme": "dark",
+              "resolvedTheme": "dark",
+              "ok": true
+            },
+            {
+              "width": 2048,
+              "height": 1320,
+              "requestedTheme": "dark",
+              "resolvedTheme": "dark",
+              "ok": true
+            }
+          ]
+        },
+        "readability": {
+          "status": "pass",
+          "minimumProjectedNodeTextPx": 6,
+          "viewports": [
+            {
+              "width": 1440,
+              "height": 900,
+              "theme": "light",
+              "innerWidth": 1440,
+              "innerHeight": 900,
+              "scrollWidth": 1440,
+              "scrollHeight": 1462,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1376,
+              "diagramWidth": 1346,
+              "pageComposition": {
+                "bodyPaddingPx": 12,
+                "headerPx": 78,
+                "diagramChromePx": 78,
+                "svgPx": 1294,
+                "cardsPx": 0,
+                "viewBoxHeight": 900
+              },
+              "viewBoxWidth": 936,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 150,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "accion"
+                  ],
+                  "nodeSpanPx": 75,
+                  "spaceAboveNodesPx": 59,
+                  "spaceBelowNodesPx": 16
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 150,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "pagina",
+                    "feedback"
+                  ],
+                  "nodeSpanPx": 75,
+                  "spaceAboveNodesPx": 59,
+                  "spaceBelowNodesPx": 16
+                },
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 150,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "metricas",
+                    "tickets"
+                  ],
+                  "nodeSpanPx": 75,
+                  "spaceAboveNodesPx": 59,
+                  "spaceBelowNodesPx": 16
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 150,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "modelo"
+                  ],
+                  "nodeSpanPx": 75,
+                  "spaceAboveNodesPx": 59,
+                  "spaceBelowNodesPx": 16
+                },
+                {
+                  "frameId": "lane-4",
+                  "heightPx": 150,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_excel",
+                    "descarga_excel"
+                  ],
+                  "nodeSpanPx": 75,
+                  "spaceAboveNodesPx": 59,
+                  "spaceBelowNodesPx": 16
+                },
+                {
+                  "frameId": "lane-5",
+                  "heightPx": 150,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_pdf",
+                    "descarga_pdf"
+                  ],
+                  "nodeSpanPx": 75,
+                  "spaceAboveNodesPx": 59,
+                  "spaceBelowNodesPx": 16
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.3,
+              "minimumProjectedNonEdgeTextPx": 6.3,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Blob + enlace temporal",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "descarga_excel"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 1600,
+              "height": 1000,
+              "theme": "light",
+              "innerWidth": 1600,
+              "innerHeight": 1000,
+              "scrollWidth": 1600,
+              "scrollHeight": 1584,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1536,
+              "diagramWidth": 1404,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 86,
+                "diagramChromePx": 84,
+                "svgPx": 1350,
+                "cardsPx": 0,
+                "viewBoxHeight": 900
+              },
+              "viewBoxWidth": 936,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 156,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "accion"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "pagina",
+                    "feedback"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "metricas",
+                    "tickets"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 156,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "modelo"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-4",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_excel",
+                    "descarga_excel"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-5",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_pdf",
+                    "descarga_pdf"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.3,
+              "minimumProjectedNonEdgeTextPx": 6.3,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Blob + enlace temporal",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "descarga_excel"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 1920,
+              "height": 1080,
+              "theme": "light",
+              "innerWidth": 1920,
+              "innerHeight": 1080,
+              "scrollWidth": 1920,
+              "scrollHeight": 1584,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1856,
+              "diagramWidth": 1404,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 86,
+                "diagramChromePx": 84,
+                "svgPx": 1350,
+                "cardsPx": 0,
+                "viewBoxHeight": 900
+              },
+              "viewBoxWidth": 936,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 156,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "accion"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "pagina",
+                    "feedback"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "metricas",
+                    "tickets"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 156,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "modelo"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-4",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_excel",
+                    "descarga_excel"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-5",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_pdf",
+                    "descarga_pdf"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.3,
+              "minimumProjectedNonEdgeTextPx": 6.3,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Blob + enlace temporal",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "descarga_excel"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 2048,
+              "height": 1320,
+              "theme": "light",
+              "innerWidth": 2048,
+              "innerHeight": 1320,
+              "scrollWidth": 2048,
+              "scrollHeight": 1602,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1920,
+              "diagramWidth": 1404,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 94,
+                "diagramChromePx": 94,
+                "svgPx": 1350,
+                "cardsPx": 0,
+                "viewBoxHeight": 900
+              },
+              "viewBoxWidth": 936,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 156,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "accion"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "pagina",
+                    "feedback"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "metricas",
+                    "tickets"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 156,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "modelo"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-4",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_excel",
+                    "descarga_excel"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-5",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_pdf",
+                    "descarga_pdf"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.3,
+              "minimumProjectedNonEdgeTextPx": 6.3,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Blob + enlace temporal",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "descarga_excel"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 44,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            }
+          ]
+        },
+        "viewerChrome": {
+          "status": "pass",
+          "viewports": [
+            {
+              "width": 1440,
+              "height": 900,
+              "theme": "light",
+              "innerWidth": 1440,
+              "innerHeight": 900,
+              "scrollWidth": 1440,
+              "scrollHeight": 1462,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1376,
+              "diagramWidth": 1346,
+              "pageComposition": {
+                "bodyPaddingPx": 12,
+                "headerPx": 78,
+                "diagramChromePx": 78,
+                "svgPx": 1294,
+                "cardsPx": 0,
+                "viewBoxHeight": 900
+              },
+              "viewBoxWidth": 936,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 150,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "accion"
+                  ],
+                  "nodeSpanPx": 75,
+                  "spaceAboveNodesPx": 59,
+                  "spaceBelowNodesPx": 16
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 150,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "pagina",
+                    "feedback"
+                  ],
+                  "nodeSpanPx": 75,
+                  "spaceAboveNodesPx": 59,
+                  "spaceBelowNodesPx": 16
+                },
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 150,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "metricas",
+                    "tickets"
+                  ],
+                  "nodeSpanPx": 75,
+                  "spaceAboveNodesPx": 59,
+                  "spaceBelowNodesPx": 16
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 150,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "modelo"
+                  ],
+                  "nodeSpanPx": 75,
+                  "spaceAboveNodesPx": 59,
+                  "spaceBelowNodesPx": 16
+                },
+                {
+                  "frameId": "lane-4",
+                  "heightPx": 150,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_excel",
+                    "descarga_excel"
+                  ],
+                  "nodeSpanPx": 75,
+                  "spaceAboveNodesPx": 59,
+                  "spaceBelowNodesPx": 16
+                },
+                {
+                  "frameId": "lane-5",
+                  "heightPx": 150,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_pdf",
+                    "descarga_pdf"
+                  ],
+                  "nodeSpanPx": 75,
+                  "spaceAboveNodesPx": 59,
+                  "spaceBelowNodesPx": 16
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.3,
+              "minimumProjectedNonEdgeTextPx": 6.3,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Blob + enlace temporal",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "descarga_excel"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 1600,
+              "height": 1000,
+              "theme": "light",
+              "innerWidth": 1600,
+              "innerHeight": 1000,
+              "scrollWidth": 1600,
+              "scrollHeight": 1584,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1536,
+              "diagramWidth": 1404,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 86,
+                "diagramChromePx": 84,
+                "svgPx": 1350,
+                "cardsPx": 0,
+                "viewBoxHeight": 900
+              },
+              "viewBoxWidth": 936,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 156,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "accion"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "pagina",
+                    "feedback"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "metricas",
+                    "tickets"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 156,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "modelo"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-4",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_excel",
+                    "descarga_excel"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-5",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_pdf",
+                    "descarga_pdf"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.3,
+              "minimumProjectedNonEdgeTextPx": 6.3,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Blob + enlace temporal",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "descarga_excel"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 1920,
+              "height": 1080,
+              "theme": "light",
+              "innerWidth": 1920,
+              "innerHeight": 1080,
+              "scrollWidth": 1920,
+              "scrollHeight": 1584,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1856,
+              "diagramWidth": 1404,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 86,
+                "diagramChromePx": 84,
+                "svgPx": 1350,
+                "cardsPx": 0,
+                "viewBoxHeight": 900
+              },
+              "viewBoxWidth": 936,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 156,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "accion"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "pagina",
+                    "feedback"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "metricas",
+                    "tickets"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 156,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "modelo"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-4",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_excel",
+                    "descarga_excel"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-5",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_pdf",
+                    "descarga_pdf"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.3,
+              "minimumProjectedNonEdgeTextPx": 6.3,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Blob + enlace temporal",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "descarga_excel"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 2048,
+              "height": 1320,
+              "theme": "light",
+              "innerWidth": 2048,
+              "innerHeight": 1320,
+              "scrollWidth": 2048,
+              "scrollHeight": 1602,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1920,
+              "diagramWidth": 1404,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 94,
+                "diagramChromePx": 94,
+                "svgPx": 1350,
+                "cardsPx": 0,
+                "viewBoxHeight": 900
+              },
+              "viewBoxWidth": 936,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 156,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "accion"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "pagina",
+                    "feedback"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "metricas",
+                    "tickets"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 156,
+                  "nodeCount": 1,
+                  "nodeIds": [
+                    "modelo"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-4",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_excel",
+                    "descarga_excel"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                },
+                {
+                  "frameId": "lane-5",
+                  "heightPx": 156,
+                  "nodeCount": 2,
+                  "nodeIds": [
+                    "generador_pdf",
+                    "descarga_pdf"
+                  ],
+                  "nodeSpanPx": 78,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 17
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.3,
+              "minimumProjectedNonEdgeTextPx": 6.3,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Blob + enlace temporal",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "descarga_excel"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": true,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 44,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            }
+          ]
+        },
+        "captures": {
+          "status": "not-requested",
+          "screenshots": [],
+          "contactSheet": null
+        },
+        "sidecars": {
+          "receipt": "flujo-reportes.browser-check.json",
+          "files": []
+        }
+      }
+    }
+  },
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  },
+  "diagnostics": [],
+  "evidence": {
+    "receipt": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\flujo-reportes.finalize.json",
+    "summaryReceipt": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\flujo-reportes.finalize-summary.json",
+    "browserCheckReceipt": "C:\\Users\\SISTEMAS\\CRM-TRANSITEMOS\\docs\\archify\\flujo-reportes.browser-check.json"
+  },
+  "visualReview": "not-requested",
+  "finishedAt": "2026-10-20T19:47:09.844Z",
+  "durationMs": 4066,
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-20T19:46:57.332Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  }
+}

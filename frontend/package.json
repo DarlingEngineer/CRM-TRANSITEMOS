@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "archify": "^0.0.4",
+    "exceljs": "^4.4.0",
     "framer-motion": "^14.0.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",

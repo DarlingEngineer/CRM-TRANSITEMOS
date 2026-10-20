@@ -1,12 +1,46 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  ArrowRight,
+  Archive,
+  BarChart3,
+  Building2,
+  CheckCircle2,
+  Clock,
+  Inbox,
+  PieChart as PieChartIcon,
+  PlusCircle,
+  RefreshCw,
+  Ticket as TicketIcon,
+} from 'lucide-react';
+import {
+  PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar,
+  XAxis, YAxis, Tooltip, LabelList, CartesianGrid,
+} from 'recharts';
 import AppLayout from '../layouts/AppLayout';
-import { apiFetch } from '../apiClient';
-import { ErrorBanner, Loading, EmptyState, StatusBadge, PriorityBadge } from '../components/Feedback';
+import PageHeader from '../components/PageHeader';
+import StatCard from '../components/StatCard';
 import ChartCard from '../components/ChartCard';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, LabelList, CartesianGrid } from 'recharts';
-import { motion } from 'framer-motion';
-import { STATUS_COLORS, PRIORITY_COLORS, SERIES_COLOR, CHART_INK, AXIS_TICK, VALUE_LABEL, TOOLTIP_PROPS } from '../utils/chartTheme';
+import { CategoryTick, ChartTooltip } from '../components/ChartVisuals';
+import { ErrorBanner, Loading, EmptyState, StatusBadge, PriorityBadge } from '../components/Feedback';
+import { apiFetch } from '../apiClient';
+import {
+  STATUS_COLORS,
+  PRIORITY_COLORS,
+  PRIORITY_ORDER,
+  SERIES_COLOR,
+  CHART_GRID,
+  CHART_CURSOR,
+  AXIS_TICK,
+  VALUE_LABEL,
+} from '../utils/chartTheme';
+
+const formatDate = (iso) => {
+  if (!iso) return '—';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+};
 
 export default function DashboardPage() {
   const [tickets, setTickets] = useState([]);
@@ -29,236 +63,390 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    let active = true;
-    (async () => {
-      try {
-        const res = await apiFetch('/tickets/?limit=100');
-        if (!res.ok) throw new Error('No se pudo conectar con el servidor.');
-        const data = await res.json();
-        if (active) { setTickets(Array.isArray(data) ? data : []); setError(''); }
-      } catch (err) {
-        if (active) setError(err.message);
-      } finally {
-        if (active) setLoading(false);
-      }
-    })();
-    return () => { active = false; };
-  }, []);
+    fetchTickets();
+  }, [fetchTickets]);
 
-  const totalTickets = tickets.length;
-  
-  const abiertos = tickets.filter(t => (t.status || '').toLowerCase() === 'abierto').length;
-  const enProceso = tickets.filter(t => ['en proceso', 'in_progress'].includes((t.status || '').toLowerCase())).length;
-  const resueltos = tickets.filter(t => ['resuelto', 'resolved'].includes((t.status || '').toLowerCase())).length;
-  const cerrados = tickets.filter(t => ['cerrado', 'closed'].includes((t.status || '').toLowerCase())).length;
+  const metrics = useMemo(() => {
+    const byStatus = (value) => tickets.filter(
+      (ticket) => (ticket.status || '').toLowerCase() === value,
+    ).length;
 
-  const baja = tickets.filter(t => (t.priority || '').toLowerCase() === 'baja').length;
-  const media = tickets.filter(t => (t.priority || '').toLowerCase() === 'media').length;
-  const alta = tickets.filter(t => (t.priority || '').toLowerCase() === 'alta').length;
-  const urgente = tickets.filter(t => (t.priority || '').toLowerCase() === 'urgente').length;
+    const byPriority = (value) => tickets.filter(
+      (ticket) => (ticket.priority || '').toLowerCase() === value,
+    ).length;
 
-  const areasMap = tickets.reduce((acc, t) => {
-    const areaName = t.area || 'Sin Área';
-    acc[areaName] = (acc[areaName] || 0) + 1;
-    return acc;
-  }, {});
+    const areas = tickets.reduce((acc, ticket) => {
+      const name = ticket.area || 'Sin área';
+      acc[name] = (acc[name] || 0) + 1;
+      return acc;
+    }, {});
+
+    return {
+      total: tickets.length,
+      abiertos: byStatus('abierto'),
+      enProceso: byStatus('en proceso'),
+      resueltos: byStatus('resuelto'),
+      cerrados: byStatus('cerrado'),
+      prioridades: {
+        Baja: byPriority('baja'),
+        Media: byPriority('media'),
+        Alta: byPriority('alta'),
+        Urgente: byPriority('urgente'),
+      },
+      areas,
+    };
+  }, [tickets]);
+
+  const recientes = useMemo(
+    () => [...tickets]
+      .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+      .slice(0, 8),
+    [tickets],
+  );
+
+  const statusData = [
+    { name: 'Abiertas', value: metrics.abiertos, fill: STATUS_COLORS.Abierto },
+    { name: 'En proceso', value: metrics.enProceso, fill: STATUS_COLORS['En proceso'] },
+    { name: 'Resueltas', value: metrics.resueltos, fill: STATUS_COLORS.Resuelto },
+    { name: 'Cerradas', value: metrics.cerrados, fill: STATUS_COLORS.Cerrado },
+  ];
+
+  const priorityData = PRIORITY_ORDER.map((name) => ({
+    name,
+    total: metrics.prioridades[name],
+    fill: PRIORITY_COLORS[name],
+  }));
+
+  const areaData = Object.entries(metrics.areas)
+    .map(([name, total]) => ({ name, total }))
+    .sort((a, b) => b.total - a.total);
 
   return (
     <AppLayout>
-      <div style={{ width: '100%', maxWidth: '1320px', margin: '0 auto', boxSizing: 'border-box' }}>
-        {/* ENCABEZADO Y ACCIONES */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <div>
-            <h1 style={{ fontSize: '1.65rem', fontWeight: 800, color: '#0b4f78', margin: 0, letterSpacing: '-0.3px' }}>
-              📊 Dashboard Ejecutivo
-            </h1>
-            <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '3px' }}>
-              Tránsito de Mosquera 2026 — Panel administrativo e indicadores generales
-            </p>
-          </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <motion.button 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/crear-ticket')}
-              style={{ 
-                background: '#2563eb', 
-                color: '#ffffff', 
-                border: 'none', 
-                padding: '8px 16px', 
-                borderRadius: '6px', 
-                fontWeight: 700, 
-                fontSize: '0.85rem', 
-                cursor: 'pointer',
-                boxShadow: '0 2px 5px rgba(0,114,188,0.2)'
-              }}>
-              + Nuevo Ticket
-            </motion.button>
-            <motion.button 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={fetchTickets}
-              style={{ 
-                background: 'var(--card-bg, #ffffff)', 
-                color: '#198754', 
-                border: '1.5px solid #198754', 
-                padding: '7px 15px', 
-                borderRadius: '6px', 
-                fontWeight: 700, 
-                fontSize: '0.85rem', 
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}>
-              🔄 Actualizar
-            </motion.button>
-          </div>
-        </div>
+      <div className="page page--dashboard">
+        <PageHeader
+          eyebrow="Panel ejecutivo"
+          title="Dashboard"
+          subtitle="Indicadores generales de las solicitudes registradas en el sistema."
+          actions={(
+            <>
+              <button
+                type="button"
+                className="btn btn--secondary"
+                onClick={fetchTickets}
+                disabled={loading}
+              >
+                <RefreshCw size={16} aria-hidden="true" />
+                Actualizar
+              </button>
+              <button
+                type="button"
+                className="btn btn--primary"
+                onClick={() => navigate('/generar-ticket')}
+              >
+                <PlusCircle size={16} aria-hidden="true" />
+                Nueva solicitud
+              </button>
+            </>
+          )}
+        />
 
-        {/* MENSAJE DE ALERTA RED */}
         <ErrorBanner message={error} />
 
         {loading ? (
-          <Loading />
+          <Loading text="Cargando indicadores…" />
         ) : (
-          <>
-            {/* TARJETAS KPI FLUIDAS */}
-            <div className="grid-kpis" style={{ marginBottom: '20px' }}>
-              <KpiCard title="TOTAL TICKETS" count={totalTickets} color={CHART_INK.brand} hint="Registrados en el sistema" onClick={() => navigate('/tickets')} />
-              <KpiCard title="ABIERTOS" count={abiertos} color={STATUS_COLORS.Abierto} hint="Pendientes de atención" onClick={() => navigate('/tickets')} />
-              <KpiCard title="EN PROCESO" count={enProceso} color={STATUS_COLORS['En proceso']} hint="En gestión actualmente" onClick={() => navigate('/tickets')} />
-              <KpiCard title="RESUELTOS" count={resueltos} color={STATUS_COLORS.Resuelto} hint="Atendidos correctamente" onClick={() => navigate('/tickets')} />
-              <KpiCard title="CERRADOS" count={cerrados} color={STATUS_COLORS.Cerrado} hint="Finalizados y archivados" onClick={() => navigate('/tickets')} />
+          <div className="dashboard-body">
+            <div className="stat-grid">
+              <StatCard
+                label="Total"
+                value={metrics.total}
+                hint="Solicitudes registradas"
+                icon={TicketIcon}
+                tone="brand"
+                onClick={() => navigate('/tickets')}
+              />
+              <StatCard
+                label="Abiertas"
+                value={metrics.abiertos}
+                hint="Pendientes de atención"
+                icon={Inbox}
+                tone="info"
+                onClick={() => navigate('/tickets')}
+              />
+              <StatCard
+                label="En proceso"
+                value={metrics.enProceso}
+                hint="En gestión actualmente"
+                icon={Clock}
+                tone="warning"
+                onClick={() => navigate('/tickets')}
+              />
+              <StatCard
+                label="Resueltas"
+                value={metrics.resueltos}
+                hint="Atendidas correctamente"
+                icon={CheckCircle2}
+                tone="success"
+                onClick={() => navigate('/tickets')}
+              />
+              <StatCard
+                label="Cerradas"
+                value={metrics.cerrados}
+                hint="Finalizadas y archivadas"
+                icon={Archive}
+                tone="violet"
+                onClick={() => navigate('/tickets')}
+              />
             </div>
 
-            {/* PANELES DE DIBUJO */}
-            <div className="grid-charts" style={{ marginBottom: '20px' }}>
+            <div className="grid-charts">
+              <ChartCard
+                title="Distribución por estado"
+                description="Solicitudes agrupadas según su estado actual en el flujo de atención."
+                icon={PieChartIcon}
+                tone="brand"
+                meta={`${metrics.total} registros`}
+              >
+                <div className="chart-fill chart-fill--donut">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={statusData}
+                        dataKey="value"
+                        nameKey="name"
+                        innerRadius="52%"
+                        outerRadius="76%"
+                        paddingAngle={2}
+                        cornerRadius={6}
+                        stroke="#ffffff"
+                        strokeWidth={2}
+                        isAnimationActive={false}
+                      >
+                        {statusData.map((entry) => (
+                          <Cell key={entry.name} fill={entry.fill} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<ChartTooltip total={metrics.total} showPercent />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="donut-center" aria-hidden="true">
+                    <strong>{metrics.total}</strong>
+                    <span>Solicitudes</span>
+                  </div>
+                </div>
 
-              {/* POR ESTADO */}
-              <ChartCard title="Distribución por estado" description="Tickets agrupados según su estado actual en el flujo de atención.">
-                <ResponsiveContainer width="100%" height={190}>
-                  <PieChart>
-                    <Pie data={[{ name: 'Abiertos', value: abiertos }, { name: 'En proceso', value: enProceso }, { name: 'Resueltos', value: resueltos }, { name: 'Cerrados', value: cerrados }]} dataKey="value" nameKey="name" innerRadius={44} outerRadius={74} paddingAngle={2} cornerRadius={4} stroke="#fff" strokeWidth={2}>
-                      <Cell fill={STATUS_COLORS.Abierto} />
-                      <Cell fill={STATUS_COLORS['En proceso']} />
-                      <Cell fill={STATUS_COLORS.Resuelto} />
-                      <Cell fill={STATUS_COLORS.Cerrado} />
-                    </Pie>
-                    <Tooltip {...TOOLTIP_PROPS} formatter={(value, name) => [`${value} ticket(s)`, name]} />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="chart-legend">
-                  <span><i style={{ background: STATUS_COLORS.Abierto }} />Abiertos {abiertos}</span>
-                  <span><i style={{ background: STATUS_COLORS['En proceso'] }} />En proceso {enProceso}</span>
-                  <span><i style={{ background: STATUS_COLORS.Resuelto }} />Resueltos {resueltos}</span>
-                  <span><i style={{ background: STATUS_COLORS.Cerrado }} />Cerrados {cerrados}</span>
+                <div className="chart-legend chart-legend--donut">
+                  {statusData.map((item) => {
+                    const pct = metrics.total ? Math.round((item.value / metrics.total) * 100) : 0;
+                    return (
+                      <span className="chart-legend__item" key={item.name}>
+                        <i style={{ background: item.fill }} aria-hidden="true" />
+                        <span className="chart-legend__name">{item.name}</span>
+                        <strong className="chart-legend__value">{item.value}</strong>
+                        <small className="chart-legend__pct">{pct}%</small>
+                      </span>
+                    );
+                  })}
                 </div>
               </ChartCard>
 
-              {/* POR PRIORIDAD */}
-              <ChartCard title="Tickets por prioridad" description="Volumen de solicitudes según el nivel de prioridad asignado.">
-                <ResponsiveContainer width="100%" height={190}>
-                  <BarChart data={[{ name: 'Baja', total: baja }, { name: 'Media', total: media }, { name: 'Alta', total: alta }, { name: 'Urgente', total: urgente }]} margin={{ top: 16, right: 8, left: -18, bottom: 0 }}>
-                    <CartesianGrid vertical={false} stroke={CHART_INK.grid} />
-                    <XAxis dataKey="name" tick={AXIS_TICK} axisLine={{ stroke: CHART_INK.axis }} tickLine={false} />
-                    <YAxis allowDecimals={false} tick={AXIS_TICK} axisLine={false} tickLine={false} />
-                    <Tooltip {...TOOLTIP_PROPS} formatter={(value) => [`${value} ticket(s)`, 'Total']} />
-                    <Bar dataKey="total" radius={[4, 4, 0, 0]} maxBarSize={44}>
-                      <Cell fill={PRIORITY_COLORS.Baja} />
-                      <Cell fill={PRIORITY_COLORS.Media} />
-                      <Cell fill={PRIORITY_COLORS.Alta} />
-                      <Cell fill={PRIORITY_COLORS.Urgente} />
-                      <LabelList dataKey="total" position="top" style={VALUE_LABEL} />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartCard>
-
-              {/* POR DEPARTAMENTO */}
-              <ChartCard title="Tickets por departamento" description="Solicitudes agrupadas por área o dependencia responsable.">
-                {Object.keys(areasMap).length === 0 ? (
-                  <div style={{ fontSize: '0.82rem', color: '#64748b', textAlign: 'center' }}>Sin áreas registradas</div>
-                ) : (
-                  <ResponsiveContainer width="100%" height={190}>
-                    <BarChart layout="vertical" data={Object.entries(areasMap).map(([area, count]) => ({ name: area, total: count })).sort((a, b) => b.total - a.total)} margin={{ left: 10, right: 24, top: 5, bottom: 5 }}>
-                      <CartesianGrid horizontal={false} stroke={CHART_INK.grid} />
-                      <XAxis type="number" allowDecimals={false} tick={AXIS_TICK} axisLine={false} tickLine={false} />
-                      <YAxis type="category" dataKey="name" width={100} tick={AXIS_TICK} axisLine={{ stroke: CHART_INK.axis }} tickLine={false} />
-                      <Tooltip {...TOOLTIP_PROPS} formatter={(value) => [`${value} ticket(s)`, 'Total']} />
-                      <Bar dataKey="total" fill={SERIES_COLOR} radius={[0, 4, 4, 0]} barSize={14}>
-                        <LabelList dataKey="total" position="right" style={VALUE_LABEL} />
+              <ChartCard
+                title="Solicitudes por prioridad"
+                description="Volumen de solicitudes según el nivel de prioridad asignado."
+                icon={BarChart3}
+                tone="info"
+                meta={`${metrics.total} registros`}
+              >
+                <div className="chart-fill">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={priorityData}
+                      margin={{ top: 18, right: 10, left: -10, bottom: 0 }}
+                      barCategoryGap="30%"
+                    >
+                      <defs>
+                        {priorityData.map((entry, index) => (
+                          <linearGradient
+                            key={entry.name}
+                            id={`dash-priority-${index}`}
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop offset="0%" stopColor={entry.fill} stopOpacity={0.95} />
+                            <stop offset="100%" stopColor={entry.fill} stopOpacity={0.7} />
+                          </linearGradient>
+                        ))}
+                      </defs>
+                      <CartesianGrid {...CHART_GRID} vertical={false} />
+                      <XAxis
+                        dataKey="name"
+                        tick={AXIS_TICK}
+                        axisLine={false}
+                        tickLine={false}
+                        tickMargin={8}
+                      />
+                      <YAxis
+                        allowDecimals={false}
+                        tick={AXIS_TICK}
+                        axisLine={false}
+                        tickLine={false}
+                        width={30}
+                      />
+                      <Tooltip
+                        content={<ChartTooltip total={metrics.total} showPercent />}
+                        cursor={CHART_CURSOR}
+                      />
+                      <Bar
+                        dataKey="total"
+                        radius={[7, 7, 0, 0]}
+                        maxBarSize={54}
+                        background={{ fill: '#f6f9fc' }}
+                        isAnimationActive={false}
+                      >
+                        {priorityData.map((entry, index) => (
+                          <Cell key={entry.name} fill={`url(#dash-priority-${index})`} />
+                        ))}
+                        <LabelList dataKey="total" position="top" offset={6} style={VALUE_LABEL} />
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
-                )}
+                </div>
               </ChartCard>
 
+              <ChartCard
+                title="Solicitudes por área"
+                description="Volumen de solicitudes por dependencia responsable."
+                icon={Building2}
+                tone="violet"
+                meta={`${areaData.length} áreas`}
+              >
+                {areaData.length === 0 ? (
+                  <EmptyState
+                    icon={<Inbox size={20} />}
+                    message="Sin áreas registradas"
+                    hint="Las áreas aparecerán cuando existan solicitudes asociadas."
+                  />
+                ) : (
+                  <div className="chart-fill">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        layout="vertical"
+                        data={areaData}
+                        margin={{ top: 2, right: 30, left: 0, bottom: 2 }}
+                        barCategoryGap="24%"
+                      >
+                        <defs>
+                          <linearGradient id="dash-area-bar" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stopColor="#0b4f78" />
+                            <stop offset="100%" stopColor={SERIES_COLOR} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid {...CHART_GRID} horizontal={false} />
+                        <XAxis
+                          type="number"
+                          allowDecimals={false}
+                          tick={AXIS_TICK}
+                          axisLine={false}
+                          tickLine={false}
+                          tickMargin={6}
+                        />
+                        <YAxis
+                          type="category"
+                          dataKey="name"
+                          width={118}
+                          tick={<CategoryTick maxChars={16} />}
+                          axisLine={false}
+                          tickLine={false}
+                        />
+                        <Tooltip
+                          content={<ChartTooltip total={metrics.total} showPercent />}
+                          cursor={CHART_CURSOR}
+                        />
+                        <Bar
+                          dataKey="total"
+                          fill="url(#dash-area-bar)"
+                          radius={[0, 6, 6, 0]}
+                          barSize={16}
+                          background={{ fill: '#f6f9fc' }}
+                          isAnimationActive={false}
+                        >
+                          <LabelList dataKey="total" position="right" offset={6} style={VALUE_LABEL} />
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </ChartCard>
             </div>
 
-            {/* TABLA DE TICKETS RECIENTES */}
-            <div style={{ background: 'var(--card-bg, #ffffff)', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.03)', width: '100%', boxSizing: 'border-box' }}>
-              <h3 style={{ fontSize: '0.78rem', fontWeight: 800, color: '#4b5563', letterSpacing: '0.5px', marginBottom: '16px', textTransform: 'uppercase', textAlign: 'center' }}>TICKETS RECIENTES</h3>
+            <section className="card recent-card">
+              <div className="card__header">
+                <div>
+                  <h2 className="card__title">Solicitudes recientes</h2>
+                  <p className="card__subtitle">Últimos tickets registrados en el sistema.</p>
+                </div>
+                <Link to="/tickets" className="btn btn--ghost btn--sm">
+                  Ver todas
+                  <ArrowRight size={15} aria-hidden="true" />
+                </Link>
+              </div>
+
               <div className="table-wrap">
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid #e2e8f0', background: '#f8fafc', textAlign: 'center', color: '#374151', fontSize: '0.72rem', fontWeight: 800 }}>
-                    <th style={{ padding: '8px 10px' }}># ID</th>
-                    <th style={{ padding: '8px 10px' }}>TÍTULO</th>
-                    <th style={{ padding: '8px 10px' }}>ÁREA</th>
-                    <th style={{ padding: '8px 10px' }}>ESTADO</th>
-                    <th style={{ padding: '8px 10px' }}>PRIORIDAD</th>
-                    <th style={{ padding: '8px 10px' }}>FECHA CREACIÓN</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tickets.length === 0 ? (
+                <table className="data-table data-table--recent">
+                  <thead>
                     <tr>
-                      <td colSpan="6"><EmptyState icon="📊" message="No hay tickets registrados en el sistema." /></td>
+                      <th>Ticket</th>
+                      <th>Solicitud</th>
+                      <th>Área</th>
+                      <th>Prioridad</th>
+                      <th>Estado</th>
+                      <th>Creado</th>
                     </tr>
-                  ) : (
-                    tickets.map((t) => (
-                      <tr key={t.id} style={{ borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>
-                        <td style={{ padding: '12px 10px', fontWeight: 700, color: '#2563eb' }}>#{t.id}</td>
-                        <td style={{ padding: '12px 10px', fontWeight: 600, color: '#1e293b' }}>{t.title}</td>
-                        <td style={{ padding: '12px 10px', color: '#475569' }}>{t.area || 'N/A'}</td>
-                        <td style={{ padding: '12px 10px' }}><StatusBadge status={t.status} /></td>
-                        <td style={{ padding: '12px 10px' }}><PriorityBadge priority={t.priority} /></td>
-                        <td style={{ padding: '12px 10px', color: '#475569' }}>
-                          {t.created_at ? new Date(t.created_at).toLocaleDateString() : 'N/A'}
+                  </thead>
+                  <tbody>
+                    {recientes.length === 0 ? (
+                      <tr>
+                        <td colSpan="6">
+                          <EmptyState
+                            icon={<Inbox size={22} />}
+                            message="No hay solicitudes registradas"
+                            hint="Crea la primera solicitud para comenzar a ver indicadores."
+                          />
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      recientes.map((ticket) => (
+                        <tr key={ticket.id} className="is-clickable" onClick={() => navigate('/tickets')}>
+                          <td className="cell-id">#{ticket.id}</td>
+                          <td>
+                            <span className="cell-title" title={ticket.title}>{ticket.title}</span>
+                            <span className="cell-sub">
+                              {ticket.updated_by
+                                ? `Actualizado por ${ticket.updated_by}`
+                                : 'Sin actualizaciones'}
+                            </span>
+                          </td>
+                          <td><span className="chip">{ticket.area || 'Sin área'}</span></td>
+                          <td><PriorityBadge priority={ticket.priority} /></td>
+                          <td><StatusBadge status={ticket.status} /></td>
+                          <td className="cell-muted">
+                            <time dateTime={ticket.created_at || undefined}>
+                              {formatDate(ticket.created_at)}
+                            </time>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
-            </div>
-          </>
+            </section>
+          </div>
         )}
       </div>
     </AppLayout>
   );
 }
-
-function KpiCard({ title, count, color, hint, onClick }) {
-  return (
-    <motion.div 
-      whileHover={{ y: -4, boxShadow: '0 6px 16px rgba(2, 62, 138, 0.15)' }}
-      onClick={onClick}
-      style={{ background: 'var(--card-bg, #ffffff)', padding: '16px 12px 14px', borderRadius: '10px', borderTop: `3px solid ${color}`, borderLeft: '1px solid #e2e8f0', borderRight: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.03)', boxSizing: 'border-box', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '120px' }}>
-      <div style={{ fontSize: '0.68rem', fontWeight: 800, color: '#4b5563', letterSpacing: '0.5px' }}>{title}</div>
-      <div style={{ fontSize: '1.9rem', fontWeight: 800, color: CHART_INK.text, margin: '4px 0 2px', lineHeight: 1.1 }}>{count}</div>
-      {hint && <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600 }}>{hint}</div>}
-      <div style={{ fontSize: '0.72rem', color: '#2563eb', fontWeight: 600, marginTop: '6px' }}>Ver detalles →</div>
-    </motion.div>
-  );
-}
-
-
-
-
-
-
-
-

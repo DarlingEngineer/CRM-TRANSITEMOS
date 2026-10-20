@@ -1,0 +1,232 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "CRM Transitemos · Arquitectura del frontend",
+    "subtitle": "SPA React, rutas protegidas, módulos, servicios y salida hacia la API",
+    "locale": "es",
+    "output": "docs/archify/arquitectura-frontend.html",
+    "quality_profile": "showcase",
+    "animation": "none",
+    "visual_preset": "classic",
+    "viewBox": [
+      900,
+      820
+    ]
+  },
+  "components": [
+    {
+      "id": "usuario",
+      "type": "external",
+      "label": "Usuario",
+      "sublabel": "Navegador web",
+      "icon": "person",
+      "pos": [
+        60,
+        90
+      ],
+      "size": [
+        300,
+        64
+      ]
+    },
+    {
+      "id": "spa",
+      "type": "frontend",
+      "label": "SPA React",
+      "sublabel": "React 19 · Vite 8 · React Router",
+      "icon": "frontend",
+      "pos": [
+        520,
+        90
+      ],
+      "size": [
+        300,
+        64
+      ]
+    },
+    {
+      "id": "routing",
+      "type": "security",
+      "label": "Rutas y guards",
+      "sublabel": "ProtectedRoute · AdminRoute",
+      "tag": "token + rol",
+      "pos": [
+        520,
+        240
+      ],
+      "size": [
+        300,
+        64
+      ]
+    },
+    {
+      "id": "shell",
+      "type": "frontend",
+      "label": "AppLayout",
+      "sublabel": "sidebar · topbar · menú por rol",
+      "pos": [
+        60,
+        240
+      ],
+      "size": [
+        300,
+        64
+      ]
+    },
+    {
+      "id": "modules",
+      "type": "frontend",
+      "label": "Módulos",
+      "sublabel": "Dashboard · Tickets · Reportes · Admin",
+      "pos": [
+        60,
+        390
+      ],
+      "size": [
+        300,
+        64
+      ]
+    },
+    {
+      "id": "state",
+      "type": "security",
+      "label": "Estado y servicios",
+      "sublabel": "AuthContext · ToastContext · apiClient",
+      "pos": [
+        520,
+        390
+      ],
+      "size": [
+        300,
+        64
+      ]
+    },
+    {
+      "id": "exports",
+      "type": "frontend",
+      "label": "Exportadores",
+      "sublabel": "reportData · ExcelJS · jsPDF",
+      "pos": [
+        60,
+        540
+      ],
+      "size": [
+        300,
+        64
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "API REST",
+      "sublabel": "FastAPI · http://127.0.0.1:8000",
+      "icon": "backend",
+      "pos": [
+        520,
+        540
+      ],
+      "size": [
+        300,
+        64
+      ]
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "Base de datos",
+      "sublabel": "PostgreSQL",
+      "icon": "database",
+      "pos": [
+        520,
+        690
+      ],
+      "size": [
+        300,
+        64
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "usuario-spa",
+      "from": "usuario",
+      "to": "spa",
+      "label": "navega",
+      "variant": "emphasis"
+    },
+    {
+      "id": "spa-routing",
+      "from": "spa",
+      "to": "routing",
+      "label": "resuelve rutas"
+    },
+    {
+      "id": "routing-shell",
+      "from": "routing",
+      "to": "shell",
+      "label": "autoriza",
+      "variant": "security"
+    },
+    {
+      "id": "shell-modules",
+      "from": "shell",
+      "to": "modules",
+      "label": "renderiza"
+    },
+    {
+      "id": "modules-state",
+      "from": "modules",
+      "to": "state",
+      "label": "datos y sesión"
+    },
+    {
+      "id": "modules-exports",
+      "from": "modules",
+      "to": "exports",
+      "label": "modelo de reporte",
+      "variant": "dashed"
+    },
+    {
+      "id": "state-api",
+      "from": "state",
+      "to": "api",
+      "label": "HTTPS · JSON"
+    },
+    {
+      "id": "api-db",
+      "from": "api",
+      "to": "db",
+      "label": "SQLAlchemy"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Capa de presentación",
+      "items": [
+        "React 19 + Vite 8 renderiza una SPA con React Router",
+        "AppLayout concentra navegación, identidad y cierre de sesión",
+        "Los módulos se cargan con lazy() y Suspense"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Control de acceso",
+      "items": [
+        "ProtectedRoute exige un token en localStorage",
+        "AdminRoute exige rol admin y espera a que AuthContext cargue",
+        "apiClient adjunta Bearer y renueva una vez ante 401"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Datos y salidas",
+      "items": [
+        "Toda llamada HTTP pasa por apiFetch hacia FastAPI",
+        "Dashboard, Tickets y Reportes consumen /tickets y /metrics",
+        "Excel y PDF se generan en el navegador con los datos cargados"
+      ]
+    }
+  ]
+}

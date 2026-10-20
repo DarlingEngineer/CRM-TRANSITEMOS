@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { Building2, Plus, Trash2 } from 'lucide-react';
 import AppLayout from '../layouts/AppLayout';
+import PageHeader from '../components/PageHeader';
 import { apiFetch } from '../apiClient';
-import { ErrorBanner, Loading } from '../components/Feedback';
+import { ErrorBanner, Loading, EmptyState } from '../components/Feedback';
 import { useToast } from '../context/ToastContext';
 
 export default function AreasPage() {
@@ -31,22 +33,29 @@ export default function AreasPage() {
         const res = await apiFetch('/areas/');
         if (!res.ok) throw new Error('No se pudieron cargar las áreas.');
         const data = await res.json();
-        if (active) { setAreas(data); setError(''); }
+        if (active) {
+          setAreas(Array.isArray(data) ? data : []);
+          setError('');
+        }
       } catch (err) {
         if (active) setError(err.message);
       } finally {
         if (active) setLoading(false);
       }
     })();
-    return () => { active = false; };
+
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const handleCreate = async (e) => {
-    e.preventDefault();
+  const handleCreate = async (event) => {
+    event.preventDefault();
     if (!nombre.trim()) return;
+
     const res = await apiFetch('/areas/', { method: 'POST', body: { name: nombre.trim() } });
     if (res.ok) {
-      showToast?.('Área creada');
+      showToast?.('Área creada correctamente');
       setNombre('');
       fetchAreas();
     } else {
@@ -62,60 +71,123 @@ export default function AreasPage() {
       showToast?.('Área eliminada');
       fetchAreas();
     } else {
-      setError('No se pudo eliminar (puede tener tickets asociados).');
+      setError('No se pudo eliminar el área. Verifica que no tenga tickets asociados.');
     }
   };
 
   return (
     <AppLayout>
-      <div style={{ maxWidth: '640px', margin: '20px auto 0', background: '#fff', padding: '28px 32px', borderRadius: '10px', border: '1px solid #e9ecef', borderTop: '4px solid #0d6efd' }}>
-        <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0d4b75', marginTop: 0 }}>🏢 Gestión de Áreas</h2>
-        <p style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '-8px', marginBottom: '18px' }}>Crea y administra las áreas de la oficina.</p>
+      <div className="page page--form page--split">
+        <PageHeader
+          eyebrow="Administración"
+          title="Áreas"
+          subtitle="Registra y administra las dependencias que atienden las solicitudes del sistema."
+        />
+
         <ErrorBanner message={error} />
 
-        <form onSubmit={handleCreate} style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-          <input
-            type="text"
-            placeholder="Nombre de la nueva área"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value.toUpperCase())}
-            style={{ flex: 1, padding: '10px 14px', borderRadius: '6px', border: '1px solid #ced4da', textTransform: 'uppercase' }}
-          />
-          <button type="submit" style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '6px', fontWeight: 700, cursor: 'pointer' }}>+ Crear</button>
-        </form>
+        <div className="split-layout">
+          <section className="card">
+            <div className="card__header">
+              <div>
+                <h2 className="card__title">Nueva área</h2>
+                <p className="card__subtitle">El nombre se registrará en mayúsculas.</p>
+              </div>
+            </div>
 
-        {loading ? <Loading /> : (
-          <div className="table-wrap">
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid #e9ecef', textAlign: 'left', color: '#495057' }}>
-                <th style={{ padding: '10px 8px' }}>#</th>
-                <th style={{ padding: '10px 8px' }}>NOMBRE</th>
-                <th style={{ padding: '10px 8px', textAlign: 'center' }}>ACCIONES</th>
-              </tr>
-            </thead>
-            <tbody>
-              {areas.map((a) => (
-                <tr key={a.id} style={{ borderBottom: '1px solid #f1f3f5' }}>
-                  <td style={{ padding: '10px 8px', fontWeight: 700, color: '#0d4b75' }}>{a.id}</td>
-                  <td style={{ padding: '10px 8px' }}>{a.name}</td>
-                  <td style={{ padding: '10px 8px', textAlign: 'center' }}>
-                    <button onClick={() => handleDelete(a.id, a.name)} style={{ background: '#dc3545', color: '#fff', border: 'none', padding: '5px 12px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}>Eliminar</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          </div>
-        )}
+            <form className="card__body form-stack" onSubmit={handleCreate}>
+              <div className="field">
+                <label className="field__label" htmlFor="area-name">
+                  Nombre del área <span className="field__req" aria-hidden="true">*</span>
+                </label>
+                <input
+                  id="area-name"
+                  className="input"
+                  type="text"
+                  placeholder="Ej.: Registro Automotor"
+                  value={nombre}
+                  onChange={(event) => setNombre(event.target.value.toUpperCase())}
+                  required
+                  autoComplete="off"
+                />
+                <p className="field__help">Usa el nombre oficial de la dependencia.</p>
+              </div>
+
+              <div className="form-actions">
+                <button type="submit" className="btn btn--primary">
+                  <Plus size={16} aria-hidden="true" />
+                  Crear área
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <section className="card">
+            <div className="card__header">
+              <div>
+                <h2 className="card__title">Áreas registradas</h2>
+                <p className="card__subtitle">
+                  {areas.length} {areas.length === 1 ? 'área disponible' : 'áreas disponibles'}
+                </p>
+              </div>
+              <span className="chip" aria-hidden="true">
+                <Building2 size={14} />
+                Catálogo
+              </span>
+            </div>
+
+            {loading ? (
+              <Loading text="Cargando áreas…" />
+            ) : (
+              <div className="table-wrap">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Área</th>
+                      <th className="col-actions">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {areas.length === 0 ? (
+                      <tr>
+                        <td colSpan="3">
+                          <EmptyState
+                            icon={<Building2 size={22} />}
+                            message="No hay áreas registradas"
+                            hint="Crea la primera área para poder asignar solicitudes."
+                          />
+                        </td>
+                      </tr>
+                    ) : (
+                      areas.map((area) => (
+                        <tr key={area.id}>
+                          <td className="cell-id">{area.id}</td>
+                          <td>
+                            <span className="cell-title" title={area.name}>{area.name}</span>
+                          </td>
+                          <td className="col-actions">
+                            <div className="cell-actions">
+                              <button
+                                type="button"
+                                className="btn btn--danger btn--sm"
+                                onClick={() => handleDelete(area.id, area.name)}
+                              >
+                                <Trash2 size={14} aria-hidden="true" />
+                                Eliminar
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+        </div>
       </div>
     </AppLayout>
   );
 }
-
-
-
-
-
-
-

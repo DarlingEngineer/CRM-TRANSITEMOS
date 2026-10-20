@@ -1,19 +1,13 @@
 import React from 'react';
+import { AlertCircle, CheckCircle2, Inbox } from 'lucide-react';
 import { STATUS_BADGES, PRIORITY_BADGES, normalizeStatus } from '../utils/chartTheme';
 
 export function ErrorBanner({ message }) {
   if (!message) return null;
   return (
-    <div style={{ background: '#f8d7da', color: '#842029', border: '1px solid #f5c2c7', padding: '10px 16px', borderRadius: '6px', marginBottom: '20px', fontSize: '0.82rem', textAlign: 'center', fontWeight: 500 }}>
-      ⚠️ {message}
-    </div>
-  );
-}
-
-export function Loading({ text = 'Cargando información del servidor...' }) {
-  return (
-    <div style={{ padding: '40px', textAlign: 'center', color: '#0b4f78', fontWeight: 600 }}>
-      {text}
+    <div className="alert alert--error" role="alert">
+      <AlertCircle size={16} aria-hidden="true" />
+      <span>{message}</span>
     </div>
   );
 }
@@ -21,17 +15,30 @@ export function Loading({ text = 'Cargando información del servidor...' }) {
 export function SuccessBanner({ message }) {
   if (!message) return null;
   return (
-    <div style={{ background: '#d1e7dd', color: '#0f5132', border: '1px solid #badbcc', padding: '10px 16px', borderRadius: '6px', marginBottom: '20px', fontSize: '0.82rem', textAlign: 'center', fontWeight: 500 }}>
-      ✅ {message}
+    <div className="alert alert--success" role="status">
+      <CheckCircle2 size={16} aria-hidden="true" />
+      <span>{message}</span>
     </div>
   );
 }
 
-export function EmptyState({ icon = '📭', message = 'Sin registros' }) {
+export function Loading({ text = 'Cargando información del servidor…' }) {
   return (
-    <div style={{ padding: '40px 20px', textAlign: 'center', color: '#94a3b8' }}>
-      <div style={{ fontSize: '2.2rem', marginBottom: '8px' }}>{icon}</div>
-      <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>{message}</div>
+    <div className="loading-state" role="status" aria-live="polite">
+      <span className="spinner" aria-hidden="true" />
+      <span>{text}</span>
+    </div>
+  );
+}
+
+export function EmptyState({ icon, message = 'Sin registros', hint }) {
+  return (
+    <div className="empty-state">
+      <div className="empty-state__icon" aria-hidden="true">
+        {icon || <Inbox size={22} />}
+      </div>
+      <p className="empty-state__title">{message}</p>
+      {hint && <p className="empty-state__hint">{hint}</p>}
     </div>
   );
 }
@@ -43,7 +50,7 @@ export const PRIORITY_COLORS = PRIORITY_BADGES;
 export function StatusBadge({ status }) {
   const theme = STATUS_COLORS[normalizeStatus(status)] || { bg: '#f1f5f9', text: '#475569' };
   return (
-    <span style={{ background: theme.bg, color: theme.text, padding: '4px 10px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
+    <span className="badge" style={{ background: theme.bg, color: theme.text }}>
       {status}
     </span>
   );
@@ -52,15 +59,8 @@ export function StatusBadge({ status }) {
 export function PriorityBadge({ priority }) {
   const theme = PRIORITY_COLORS[priority] || { bg: '#f1f5f9', text: '#475569' };
   return (
-    <span style={{ background: theme.bg, color: theme.text, padding: '4px 10px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
+    <span className="badge" style={{ background: theme.bg, color: theme.text }}>
       {priority}
     </span>
   );
 }
-
-
-
-
-
-
-
