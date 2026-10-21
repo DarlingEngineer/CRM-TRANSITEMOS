@@ -73,13 +73,14 @@ def update_ticket_status(
     db: Session = Depends(get_db),
     current_user: dict = Depends(require_roles("admin", "tecnico")),
 ):
-    service = TicketService(TicketRepository(db))   # ← corregido
+    service = TicketService(TicketRepository(db))
     try:
-<<<<<<< HEAD
-        ticket = service.update_status(ticket_id, data.status, current_user.get("username"))
-=======
-        ticket = service.update_status(ticket_id, data.status, changed_by_id=current_user["user_id"])
->>>>>>> upstream/main
+        ticket = service.update_status(
+            ticket_id,
+            data.status,
+            changed_by_id=current_user["user_id"],
+            username=current_user.get("username"),
+        )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     return TicketResponse.from_ticket(ticket)

@@ -1,10 +1,18 @@
 from .repository import TicketRepository
 
+
 class TicketService:
     def __init__(self, repository: TicketRepository):
         self.repository = repository
 
-    def create_ticket(self, title: str, body: str | None, priority: str, area_name: str, user_id: int):
+    def create_ticket(
+        self,
+        title: str,
+        body: str | None,
+        priority: str,
+        area_name: str,
+        user_id: int,
+    ):
         area = self.repository.get_area_by_name(area_name)
         if not area:
             raise ValueError(f"El área '{area_name}' no existe")
@@ -15,22 +23,26 @@ class TicketService:
             return self.repository.list_all(skip, limit)
         return self.repository.list_by_user(user_id, skip, limit)
 
-<<<<<<< HEAD
-    def update_status(self, ticket_id: int, new_status: str, username: str | None = None):
-=======
-    def update_status(self, ticket_id: int, new_status: str, changed_by_id: int):
->>>>>>> upstream/main
+    def update_status(
+        self,
+        ticket_id: int,
+        new_status: str,
+        changed_by_id: int,
+        username: str | None = None,
+    ):
         ticket = self.repository.get_by_id(ticket_id)
         if ticket is None:
             raise ValueError("Ticket no encontrado")
-<<<<<<< HEAD
-        return self.repository.update_status(ticket, new_status, username)
-=======
+
         old_status = ticket.status
-        updated = self.repository.update_status(ticket, new_status)   # ← antes decía ticket_id
-        self.repository.log_status_change(ticket_id, old_status, new_status, changed_by_id)
+        updated = self.repository.update_status(ticket, new_status, username)
+        self.repository.log_status_change(
+            ticket_id,
+            old_status,
+            new_status,
+            changed_by_id,
+        )
         return updated
 
     def get_history(self, ticket_id: int):
         return self.repository.get_history(ticket_id)
->>>>>>> upstream/main
