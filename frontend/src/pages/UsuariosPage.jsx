@@ -260,11 +260,11 @@ export default function UsuariosPage() {
                   ) : (
                     usuarios.map((user) => (
                       <tr key={user.id}>
-                        <td className="cell-id">{user.id}</td>
-                        <td>
+                        <td className="cell-id" data-label="#">#{user.id}</td>
+                        <td data-label="Usuario">
                           <span className="cell-title" title={user.username}>{user.username}</span>
                         </td>
-                        <td>
+                        <td data-label="Rol">
                           <select
                             className="select select--xs"
                             value={user.role}
@@ -279,12 +279,12 @@ export default function UsuariosPage() {
                             ))}
                           </select>
                         </td>
-                        <td>
+                        <td data-label="Estado">
                           <span className={`badge ${user.is_active ? 'badge--success' : 'badge--muted'}`}>
                             {user.is_active ? 'Activo' : 'Inactivo'}
                           </span>
                         </td>
-                        <td className="col-actions">
+                        <td className="col-actions" data-label="Acciones">
                           <div className="cell-actions">
                             <button
                               type="button"

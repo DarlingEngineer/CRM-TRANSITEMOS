@@ -50,7 +50,7 @@ export default function DashboardPage() {
 
   const fetchTickets = useCallback(async () => {
     try {
-      const res = await apiFetch('/tickets/?limit=100');
+      const res = await apiFetch('/tickets/?limit=500');
       if (!res.ok) throw new Error('No se pudo conectar con el servidor.');
       const data = await res.json();
       setTickets(Array.isArray(data) ? data : []);
@@ -420,8 +420,8 @@ export default function DashboardPage() {
                     ) : (
                       recientes.map((ticket) => (
                         <tr key={ticket.id} className="is-clickable" onClick={() => navigate('/tickets')}>
-                          <td className="cell-id">#{ticket.id}</td>
-                          <td>
+                          <td className="cell-id" data-label="Ticket">#{ticket.id}</td>
+                          <td data-label="Solicitud">
                             <span className="cell-title" title={ticket.title}>{ticket.title}</span>
                             <span className="cell-sub">
                               {ticket.updated_by
@@ -429,10 +429,10 @@ export default function DashboardPage() {
                                 : 'Sin actualizaciones'}
                             </span>
                           </td>
-                          <td><span className="chip">{ticket.area || 'Sin área'}</span></td>
-                          <td><PriorityBadge priority={ticket.priority} /></td>
-                          <td><StatusBadge status={ticket.status} /></td>
-                          <td className="cell-muted">
+                          <td data-label="Área"><span className="chip">{ticket.area || 'Sin área'}</span></td>
+                          <td data-label="Prioridad"><PriorityBadge priority={ticket.priority} /></td>
+                          <td data-label="Estado"><StatusBadge status={ticket.status} /></td>
+                          <td className="cell-muted" data-label="Creado">
                             <time dateTime={ticket.created_at || undefined}>
                               {formatDate(ticket.created_at)}
                             </time>

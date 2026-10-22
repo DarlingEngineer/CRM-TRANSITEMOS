@@ -423,24 +423,24 @@ export default function EstadoTicketsPage() {
                           className="is-clickable"
                           onClick={() => setSelectedTicket(ticket)}
                         >
-                          <td className="cell-id">#{ticket.id}</td>
-                          <td>
+                          <td className="cell-id" data-label="Ticket">#{ticket.id}</td>
+                          <td data-label="Solicitud">
                             <span className="cell-title" title={ticket.title}>{ticket.title}</span>
                             <span className="cell-sub" title={ticket.body || ''}>
                               {ticket.body || 'Sin descripción'}
                             </span>
                           </td>
-                          <td>
+                          <td data-label="Área">
                             <span className="chip">{ticket.area || 'Sin área'}</span>
                           </td>
-                          <td><PriorityBadge priority={ticket.priority} /></td>
-                          <td><StatusBadge status={ticket.status} /></td>
-                          <td className="cell-muted">
+                          <td data-label="Prioridad"><PriorityBadge priority={ticket.priority} /></td>
+                          <td data-label="Estado"><StatusBadge status={ticket.status} /></td>
+                          <td className="cell-muted" data-label="Creado">
                             <time dateTime={ticket.created_at || undefined}>
                               {formatDate(ticket.created_at)}
                             </time>
                           </td>
-                          <td className="col-actions">
+                          <td className="col-actions" data-label="Acciones">
                             <div
                               className="cell-actions"
                               onClick={(event) => event.stopPropagation()}
