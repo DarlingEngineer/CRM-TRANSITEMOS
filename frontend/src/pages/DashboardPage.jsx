@@ -50,7 +50,7 @@ export default function DashboardPage() {
 
   const fetchTickets = useCallback(async () => {
     try {
-      const res = await apiFetch('/tickets/?limit=500');
+      const res = await apiFetch('/tickets/?limit=100');
       if (!res.ok) throw new Error('No se pudo conectar con el servidor.');
       const data = await res.json();
       setTickets(Array.isArray(data) ? data : []);
