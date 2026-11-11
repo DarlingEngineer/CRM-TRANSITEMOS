@@ -82,3 +82,13 @@ def area_registro(db_session):
     db_session.add(area)
     db_session.commit()
     return area
+
+@pytest.fixture()
+def areas(db_session):
+    from modules.tickets.models import Area
+
+    nombres = ["Registro Automotor", "Concesionarios"]
+    for nombre in nombres:
+        db_session.add(Area(name=nombre))
+    db_session.commit()
+    return nombres
