@@ -29,20 +29,37 @@ class TicketService:
         new_status: str,
         changed_by_id: int,
         username: str | None = None,
+        solution: str | None = None,
     ):
+        
         ticket = self.repository.get_by_id(ticket_id)
         if ticket is None:
             raise ValueError("Ticket no encontrado")
 
         old_status = ticket.status
-        updated = self.repository.update_status(ticket, new_status, username)
+        clean_solution = solution.strip() if solution and solution.strip() else None
+        updated = self.repository.update_status(ticket, new_status, username, clean_solution)
         self.repository.log_status_change(
             ticket_id,
             old_status,
             new_status,
             changed_by_id,
+            clean_solution,
         )
         return updated
+
+
+    def edit_ticket(
+        self,
+        ticket_id: int,
+        priority: str | None = None,
+        solution: str | None = None,
+        username: str | None = None,
+    ):
+        ticket = self.repository.get_by_id(ticket_id)
+        if ticket is None:
+            raise ValueError("Ticket no encontrado")
+        return self.repository.update_fields(ticket, priority, solution, username)
 
     def get_history(self, ticket_id: int):
         return self.repository.get_history(ticket_id)

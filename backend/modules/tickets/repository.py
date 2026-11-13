@@ -24,20 +24,40 @@ class TicketRepository:
     def get_by_id(self, ticket_id: int) -> Ticket | None:
         return self.db.query(Ticket).filter(Ticket.id == ticket_id).first()
 
-    def update_status(self, ticket: Ticket, new_status: str, username: str | None = None) -> Ticket:
-        ticket.status = new_status
+    def update_status(self, ticket: Ticket, new_status: str, username: str | None = None, solution: str | None = None,) -> Ticket:
+        if solution is not None and solution.strip():
+            ticket.solution = solution.strip()
         if username is not None:
             ticket.updated_by = username
         self.db.commit()
         self.db.refresh(ticket)
         return ticket
 
-    def log_status_change(self, ticket_id: int, old_status: str | None, new_status: str, changed_by_id: int):
+    def update_fields(
+        self,
+        ticket: Ticket,
+        priority: str | None = None,
+        solution: str | None = None,
+        username: str | None = None,
+    ) -> Ticket:
+        if priority is not None:
+            ticket.priority = priority
+        if solution is not None and solution.strip():
+            ticket.solution = solution.strip()
+        if username is not None:
+            ticket.updated_by = username
+        self.db.commit()
+        self.db.refresh(ticket)
+        return ticket
+    
+
+    def log_status_change(self, ticket_id: int, old_status: str | None, new_status: str, changed_by_id: int, solution: str | None = None):
         entry = TicketHistory(
             ticket_id=ticket_id,
             old_status=old_status,
             new_status=new_status,
             changed_by_id=changed_by_id,
+            solution=solution,
     )
         self.db.add(entry)
         self.db.commit()

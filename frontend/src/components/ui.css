@@ -1823,6 +1823,22 @@ button.pagination__btn:not(:disabled):hover {
   color: var(--ink-500);
 }
 
+.detail-section__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.timeline__note {
+  margin: 6px 0 0;
+  padding: 8px 10px;
+  font-size: 0.8rem;
+  color: var(--ink-700, var(--ink-500));
+  background: var(--surface-2, rgba(0, 0, 0, 0.04));
+  border-radius: 6px;
+  white-space: pre-wrap;
+}
+
 /* =========================================================
    12. Gráficas y reportes
    ========================================================= */

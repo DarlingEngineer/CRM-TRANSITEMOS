@@ -20,6 +20,7 @@ class Ticket(Base):
     body = Column(Text)
     priority = Column(String, nullable=False)
     status = Column(String, nullable=False, default="Abierto")
+    solution = Column(Text, nullable=True)
     area_id = Column(Integer, ForeignKey("areas.id"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     updated_by = Column(String, nullable=True)
@@ -35,6 +36,7 @@ class TicketHistory(Base):
     ticket_id = Column(Integer, ForeignKey("tickets.id"), nullable=False)
     old_status = Column(String, nullable=True)   # None cuando es el estado inicial
     new_status = Column(String, nullable=False)
+    solution = Column(Text, nullable=True)
     changed_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     changed_at = Column(DateTime(timezone=True), server_default=func.now())
 

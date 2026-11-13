@@ -1,4 +1,4 @@
-from .schemas import TicketHistoryResponse, TicketCreate, TicketUpdate, TicketResponse
+from .schemas import TicketHistoryResponse, TicketCreate, TicketUpdate, TicketEdit, TicketResponse
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from core.database import get_db
@@ -80,10 +80,32 @@ def update_ticket_status(
             data.status,
             changed_by_id=current_user["user_id"],
             username=current_user.get("username"),
+            solution=data.solution,
         )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     return TicketResponse.from_ticket(ticket)
+
+
+@router.patch("/{ticket_id}", response_model=TicketResponse)
+def edit_ticket(
+      ticket_id: int,
+      data: TicketEdit,
+      db: Session = Depends(get_db),
+      current_user: dict = Depends(require_roles("admin", "tecnico")),
+  ):
+      service = TicketService(TicketRepository(db))
+      try:
+          ticket = service.edit_ticket(
+              ticket_id,
+              priority=data.priority,
+              solution=data.solution,
+              username=current_user.get("username"),
+          )
+      except ValueError as e:
+          raise HTTPException(status_code=404, detail=str(e))
+      return TicketResponse.from_ticket(ticket)
+
 
 @router.get("/{ticket_id}/history", response_model=list[TicketHistoryResponse])
 def historial_ticket(

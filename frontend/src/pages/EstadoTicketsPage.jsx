@@ -32,6 +32,7 @@ import { formatDateTime } from '../utils/reportData';
 
 const STATUS_OPTIONS = ['Abierto', 'En proceso', 'Resuelto', 'Cerrado'];
 const PRIORITY_OPTIONS = ['Baja', 'Media', 'Alta', 'Urgente'];
+const EDITABLE_PRIORITIES = ['Baja', 'Media', 'Alta', 'Urgente']; // Prioridades que se pueden cambiar desde el detalle del ticket
 const PAGE_SIZE = 10;
 
 const formatDate = (iso) => {
@@ -59,6 +60,8 @@ export default function EstadoTicketsPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [selectedTicket, setSelectedTicket] = useState(null);
+  const [resolving, setResolving] = useState(null);     // ticket que se está resolviendo
+  const [solutionText, setSolutionText] = useState(''); // texto de la solución
 
   const fetchTickets = useCallback(async () => {
     try {
@@ -111,9 +114,21 @@ export default function EstadoTicketsPage() {
    * Cambia el estado en la API y refleja el resultado en pantalla.
    * Devuelve true solo si la actualización se completó.
    */
-  const handleStatusChange = async (ticket, newStatus) => {
+    const handleStatusChange = async (ticket, newStatus, solution) => {
     if (!ticket || newStatus === ticket.status) return false;
-    if (!window.confirm(`¿Cambiar el estado del ticket #${ticket.id} a "${newStatus}"?`)) {
+
+    // Para resolver hay que describir la solución: se pide en un modal.
+    if (newStatus === 'Resuelto' && solution === undefined) {
+      setSolutionText(ticket.solution || '');
+      setResolving(ticket);
+      return false;
+    }
+
+    // Con solución el modal ya sirve de confirmación; en los demás casos se pregunta.
+    if (
+      solution === undefined
+      && !window.confirm(`¿Cambiar el estado del ticket #${ticket.id} a "${newStatus}"?`)
+    ) {
       return false;
     }
 
@@ -123,7 +138,7 @@ export default function EstadoTicketsPage() {
     try {
       const res = await apiFetch(`/tickets/${ticket.id}`, {
         method: 'PUT',
-        body: { status: newStatus },
+       body: solution === undefined ? { status: newStatus } : { status: newStatus, solution },
       });
 
       if (!res.ok) {
@@ -131,11 +146,13 @@ export default function EstadoTicketsPage() {
         throw new Error(data?.detail || 'No se pudo actualizar el estado.');
       }
 
+      const updatedTicket = await res.json().catch(() => null);
+      const changes = updatedTicket || { status: newStatus };
       setTickets((prev) => prev.map((item) => (
-        item.id === ticket.id ? { ...item, status: newStatus } : item
+        item.id === ticket.id ? { ...item, ...changes } : item
       )));
       setSelectedTicket((prev) => (
-        prev && prev.id === ticket.id ? { ...prev, status: newStatus } : prev
+        prev && prev.id === ticket.id ? { ...prev, ...changes } : prev
       ));
       showToast?.(`Estado del ticket #${ticket.id} actualizado a "${newStatus}"`);
       return true;
@@ -147,6 +164,56 @@ export default function EstadoTicketsPage() {
       setUpdatingId(null);
     }
   };
+
+   const handleConfirmResolution = async (event) => {
+    event.preventDefault();
+    const text = solutionText.trim();
+    if (!text || !resolving) return;
+    const updated = await handleStatusChange(resolving, 'Resuelto', text);
+    if (updated) {
+      setResolving(null);
+      setSolutionText('');
+    }
+  };
+
+    /**
+   * Edita prioridad y/o solución sin tocar el estado (PATCH /tickets/{id}).
+   * Devuelve true solo si se guardó.
+   */
+  const handleEditTicket = async (ticket, changes, successMessage) => {
+    setUpdatingId(ticket.id);
+    setError('');
+
+    try {
+      const res = await apiFetch(`/tickets/${ticket.id}`, {
+        method: 'PATCH',
+        body: changes,
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        const detail = Array.isArray(data?.detail) ? data.detail[0]?.msg : data?.detail;
+        throw new Error(detail || 'No se pudo guardar el cambio.');
+      }
+
+      const updatedTicket = await res.json();
+      setTickets((prev) => prev.map((item) => (
+        item.id === ticket.id ? { ...item, ...updatedTicket } : item
+      )));
+      setSelectedTicket((prev) => (
+        prev && prev.id === ticket.id ? { ...prev, ...updatedTicket } : prev
+      ));
+      showToast?.(successMessage);
+      return true;
+    } catch (err) {
+      setError(`No se pudo actualizar el ticket: ${err.message}`);
+      showToast?.('Error al actualizar el ticket', 'error');
+      return false;
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
 
   const handleCloseTicket = async (ticket) => {
     const updated = await handleStatusChange(ticket, 'Cerrado');
@@ -531,6 +598,27 @@ export default function EstadoTicketsPage() {
         size="lg"
         footer={selectedTicket ? (
           <div className="modal__actions">
+
+            {puedeEditar && (
+              <label className="modal__status">
+                Prioridad
+                <select
+                  className="select select--sm"
+                  value={selectedTicket.priority}
+                  disabled={updatingId === selectedTicket.id}
+                  onChange={(event) => handleEditTicket(
+                    selectedTicket,
+                    { priority: event.target.value },
+                    `Prioridad del ticket #${selectedTicket.id} cambiada a "${event.target.value}"`,
+                  )}
+                >
+                  {EDITABLE_PRIORITIES.map((priority) => (
+                    <option key={priority} value={priority}>{priority}</option>
+                  ))}
+                </select>
+              </label>
+            )}
+
             {puedeEditar && (
               <label className="modal__status">
                 Estado
@@ -574,19 +662,62 @@ export default function EstadoTicketsPage() {
       >
         {selectedTicket && (
           <TicketDetail
+            key={selectedTicket.id}
             ticket={selectedTicket}
             puedeEditar={puedeEditar}
+            saving={updatingId === selectedTicket.id}
+            onSaveSolution={(text) => handleEditTicket(
+              selectedTicket,
+              { solution: text },
+              `Solución del ticket #${selectedTicket.id} guardada`,
+            )}
           />
         )}
+      </Modal>
+            <Modal
+        open={Boolean(resolving)}
+        onClose={() => setResolving(null)}
+        title={resolving ? `Resolver ticket #${resolving.id}` : 'Resolver ticket'}
+        subtitle={resolving?.title}
+      >
+        <form onSubmit={handleConfirmResolution} className="form-stack">
+          <label className="form-field">
+            <span className="form-label">Solución dada</span>
+            <textarea
+              className="input"
+              rows={5}
+              required
+              autoFocus
+              maxLength={2000}
+              placeholder="Describe qué se hizo para resolver la solicitud"
+              value={solutionText}
+              onChange={(event) => setSolutionText(event.target.value)}
+            />
+          </label>
+          <div className="modal__actions">
+            <button type="button" className="btn btn--secondary" onClick={() => setResolving(null)}>
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="btn btn--primary"
+              disabled={!solutionText.trim() || updatingId === resolving?.id}
+            >
+              Marcar como resuelto
+            </button>
+          </div>
+        </form>
       </Modal>
     </AppLayout>
   );
 }
 
-function TicketDetail({ ticket, puedeEditar }) {
+function TicketDetail({ ticket, puedeEditar, saving, onSaveSolution }) {
+  const [solutionDraft, setSolutionDraft] = useState(ticket.solution || '');
   const [history, setHistory] = useState([]);
   const [historyError, setHistoryError] = useState('');
   const [loadingHistory, setLoadingHistory] = useState(false);
+  
 
   useEffect(() => {
     if (!puedeEditar) return undefined;
@@ -647,6 +778,42 @@ function TicketDetail({ ticket, puedeEditar }) {
         </p>
       </section>
 
+      {puedeEditar ? (
+        <section className="detail-section">
+          <h3 className="detail-section__title">Solución</h3>
+          <textarea
+            className="input"
+            rows={4}
+            maxLength={2000}
+            placeholder="Escribe la solución dada a esta solicitud"
+            value={solutionDraft}
+            onChange={(event) => setSolutionDraft(event.target.value)}
+            aria-label="Solución dada"
+          />
+          <div className="detail-section__actions">
+            <button
+              type="button"
+              className="btn btn--secondary btn--sm"
+              disabled={
+                saving
+                || !solutionDraft.trim()
+                || solutionDraft.trim() === (ticket.solution || '')
+              }
+              onClick={() => onSaveSolution(solutionDraft.trim())}
+            >
+              Guardar solución
+            </button>
+          </div>
+        </section>
+        ) : (
+          ticket.solution && (
+            <section className="detail-section">
+              <h3 className="detail-section__title">Solución</h3>
+              <p className="detail-description">{ticket.solution}</p>
+            </section>
+          )
+        )}
+
       <section className="detail-section">
         <h3 className="detail-section__title">Historial de cambios</h3>
 
@@ -682,6 +849,11 @@ function TicketDetail({ ticket, puedeEditar }) {
                   <p className="timeline__meta">
                     Usuario #{entry.changed_by_id} · {formatDateTime(entry.changed_at)}
                   </p>
+                      {entry.solution && (
+                    <p className="timeline__note">
+                      <strong>Solución:</strong> {entry.solution}
+                    </p>
+                  )}
                 </div>
               </li>
             ))}

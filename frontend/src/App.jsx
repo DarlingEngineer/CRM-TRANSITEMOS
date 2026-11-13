@@ -49,7 +49,6 @@ export default function App() {
               <Route path="/reportes" element={<ReportesPage />} />
               <Route path="/areas" element={<AreasPage />} />
               <Route path="/usuarios" element={<UsuariosPage />} />
-              <Route path="/roles" element={<RolesPage />} />
             </Route>
 
             {/* Ruta 404 */}
