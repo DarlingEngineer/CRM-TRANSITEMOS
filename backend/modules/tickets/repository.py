@@ -25,6 +25,7 @@ class TicketRepository:
         return self.db.query(Ticket).filter(Ticket.id == ticket_id).first()
 
     def update_status(self, ticket: Ticket, new_status: str, username: str | None = None, solution: str | None = None,) -> Ticket:
+        ticket.status = new_status
         if solution is not None and solution.strip():
             ticket.solution = solution.strip()
         if username is not None:

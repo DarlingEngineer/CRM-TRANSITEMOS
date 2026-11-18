@@ -94,3 +94,13 @@ def test_solicitante_no_puede_editar(client, solicitante_user, admin_user, area_
 def test_editar_ticket_inexistente_es_404(client, admin_user):
     headers = _login(client, *admin_user)
     assert client.patch("/tickets/99999", json={"priority": "Baja"}, headers=headers).status_code == 404
+
+def test_cambiar_estado_persiste(client, admin_user, area_registro):
+    headers = _login(client, *admin_user)
+    t = _crear_ticket(client, headers)
+    r = client.put(f"/tickets/{t['id']}", json={"status": "En proceso"}, headers=headers)
+    assert r.status_code == 200
+    assert r.json()["status"] == "En proceso"
+
+    lista = client.get("/tickets/", headers=headers).json()
+    assert next(x for x in lista if x["id"] == t["id"])["status"] == "En proceso"
