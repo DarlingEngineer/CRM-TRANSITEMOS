@@ -47,6 +47,13 @@ export function EmptyState({ icon, message = 'Sin registros', hint }) {
 export const STATUS_COLORS = STATUS_BADGES;
 export const PRIORITY_COLORS = PRIORITY_BADGES;
 
+const PRIORITY_SEMAFORO = {
+  baja:    { bg: '#ECFDF5', text: '#065F46' },
+  media:   { bg: '#FFFBEB', text: '#92400E' },
+  alta:    { bg: '#FFF7ED', text: '#9A3412' },
+  urgente: { bg: '#FEF2F2', text: '#991B1B' },
+};
+
 export function StatusBadge({ status }) {
   const theme = STATUS_COLORS[normalizeStatus(status)] || { bg: '#f1f5f9', text: '#475569' };
   return (
@@ -57,7 +64,8 @@ export function StatusBadge({ status }) {
 }
 
 export function PriorityBadge({ priority }) {
-  const theme = PRIORITY_COLORS[priority] || { bg: '#f1f5f9', text: '#475569' };
+  const key = (priority || '').toLowerCase();
+  const theme = PRIORITY_SEMAFORO[key] || PRIORITY_COLORS[priority] || { bg: '#f1f5f9', text: '#475569' };
   return (
     <span className="badge" style={{ background: theme.bg, color: theme.text }}>
       {priority}

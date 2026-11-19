@@ -35,6 +35,19 @@ const PRIORITY_OPTIONS = ['Baja', 'Media', 'Alta', 'Urgente'];
 const EDITABLE_PRIORITIES = ['Baja', 'Media', 'Alta', 'Urgente']; // Prioridades que se pueden cambiar desde el detalle del ticket
 const PAGE_SIZE = 10;
 
+const getTimeSemaforo = (ticket) => {
+  const st = (ticket.status || '').toLowerCase();
+  if (st === 'resuelto' || st === 'cerrado') {
+    return { color: '#10B981', tip: 'Finalizado a tiempo' };
+  }
+  const dias = ticket.created_at
+    ? Math.floor((Date.now() - new Date(ticket.created_at).getTime()) / 86400000)
+    : 0;
+  if (dias >= 5) return { color: '#EF4444', tip: `Crítico: ${dias} días abierto` };
+  if (dias >= 2) return { color: '#F59E0B', tip: `Seguimiento: ${dias} días abierto` };
+  return { color: '#10B981', tip: dias === 0 ? 'Reciente (hoy)' : `A tiempo (${dias}d)` };
+};
+
 const formatDate = (iso) => {
   if (!iso) return '—';
   const date = new Date(iso);
@@ -114,7 +127,7 @@ export default function EstadoTicketsPage() {
    * Cambia el estado en la API y refleja el resultado en pantalla.
    * Devuelve true solo si la actualización se completó.
    */
-    const handleStatusChange = async (ticket, newStatus, solution) => {
+  const handleStatusChange = async (ticket, newStatus, solution) => {
     if (!ticket || newStatus === ticket.status) return false;
 
     // Para resolver hay que describir la solución: se pide en un modal.
@@ -138,7 +151,7 @@ export default function EstadoTicketsPage() {
     try {
       const res = await apiFetch(`/tickets/${ticket.id}`, {
         method: 'PUT',
-       body: solution === undefined ? { status: newStatus } : { status: newStatus, solution },
+        body: solution === undefined ? { status: newStatus } : { status: newStatus, solution },
       });
 
       if (!res.ok) {
@@ -165,7 +178,7 @@ export default function EstadoTicketsPage() {
     }
   };
 
-   const handleConfirmResolution = async (event) => {
+  const handleConfirmResolution = async (event) => {
     event.preventDefault();
     const text = solutionText.trim();
     if (!text || !resolving) return;
@@ -176,7 +189,7 @@ export default function EstadoTicketsPage() {
     }
   };
 
-    /**
+  /**
    * Edita prioridad y/o solución sin tocar el estado (PATCH /tickets/{id}).
    * Devuelve true solo si se guardó.
    */
@@ -214,7 +227,6 @@ export default function EstadoTicketsPage() {
     }
   };
 
-
   const handleCloseTicket = async (ticket) => {
     const updated = await handleStatusChange(ticket, 'Cerrado');
     if (updated) setSelectedTicket(null);
@@ -222,16 +234,21 @@ export default function EstadoTicketsPage() {
 
   const filteredTickets = useMemo(() => {
     const term = search.trim().toLowerCase();
-    return tickets.filter((ticket) => (
-      (!filterStatus || ticket.status === filterStatus)
-      && (!filterPriority || ticket.priority === filterPriority)
-      && (!filterArea || ticket.area === filterArea)
-      && (
-        !term
-        || (ticket.title || '').toLowerCase().includes(term)
-        || String(ticket.id).includes(term)
-      )
-    ));
+    return tickets
+      .filter((ticket) => (
+        (!filterStatus || ticket.status === filterStatus)
+        && (!filterPriority || ticket.priority === filterPriority)
+        && (!filterArea || ticket.area === filterArea)
+        && (
+          !term
+          || (ticket.title || '').toLowerCase().includes(term)
+          || String(ticket.id).includes(term)
+        )
+      ))
+      .sort((a, b) => {
+        const diff = new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+        return diff !== 0 ? diff : Number(b.id) - Number(a.id);
+      });
   }, [tickets, filterStatus, filterPriority, filterArea, search]);
 
   const suggestions = useMemo(() => {
@@ -284,7 +301,7 @@ export default function EstadoTicketsPage() {
               <button
                 type="button"
                 className="btn btn--secondary"
-                onClick={fetchTickets}
+                onClick={() => window.location.reload()}
                 disabled={loading}
               >
                 <RefreshCw size={16} aria-hidden="true" />
@@ -305,288 +322,303 @@ export default function EstadoTicketsPage() {
         <ErrorBanner message={error} />
 
         <div className="tickets-body">
-        <div className="stat-grid stat-grid--4">
-          <StatCard
-            label="Total"
-            value={counts.total}
-            hint="Solicitudes registradas"
-            icon={TicketIcon}
-            tone="brand"
-            onClick={() => applyStatusFilter('')}
-          />
-          <StatCard
-            label="Abiertas"
-            value={counts.abiertos}
-            hint="Pendientes de atención"
-            icon={Inbox}
-            tone="info"
-            onClick={() => applyStatusFilter('Abierto')}
-          />
-          <StatCard
-            label="En proceso"
-            value={counts.proceso}
-            hint="En gestión actualmente"
-            icon={Clock}
-            tone="warning"
-            onClick={() => applyStatusFilter('En proceso')}
-          />
-          <StatCard
-            label="Resueltas / cerradas"
-            value={counts.resueltos}
-            hint="Atendidas o finalizadas"
-            icon={CheckCircle2}
-            tone="success"
-            onClick={() => applyStatusFilter('Resuelto')}
-          />
-        </div>
-
-        <section className="card">
-          <div className="toolbar">
-            <div className="toolbar__search">
-              <Search size={16} className="toolbar__search-icon" aria-hidden="true" />
-              <input
-                type="search"
-                className="input"
-                placeholder="Buscar por título o número de ticket"
-                value={search}
-                onChange={(event) => {
-                  setSearch(event.target.value);
-                  setPage(1);
-                }}
-                aria-label="Buscar solicitudes"
-              />
-              {search && (
-                <button
-                  type="button"
-                  className="toolbar__clear"
-                  onClick={() => {
-                    setSearch('');
-                    setPage(1);
-                  }}
-                  aria-label="Limpiar búsqueda"
-                >
-                  <X size={14} />
-                </button>
-              )}
-
-              {search.trim() && (
-                <div className="search-suggestions">
-                  {suggestions.length === 0 ? (
-                    <div className="search-suggestions__empty">Sin coincidencias</div>
-                  ) : (
-                    suggestions.map((ticket) => (
-                      <button
-                        type="button"
-                        key={ticket.id}
-                        className="search-suggestions__item"
-                        onClick={() => {
-                          setSearch(ticket.title);
-                          setPage(1);
-                        }}
-                      >
-                        <span className="search-suggestions__id">#{ticket.id}</span>
-                        <span>{ticket.title}</span>
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="toolbar__filters">
-              <label className="toolbar__field">
-                <span>Estado</span>
-                <select
-                  className="select select--sm"
-                  value={filterStatus}
-                  onChange={(event) => {
-                    setFilterStatus(event.target.value);
-                    setPage(1);
-                  }}
-                >
-                  <option value="">Todos</option>
-                  {STATUS_OPTIONS.map((status) => (
-                    <option key={status} value={status}>{status}</option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="toolbar__field">
-                <span>Prioridad</span>
-                <select
-                  className="select select--sm"
-                  value={filterPriority}
-                  onChange={(event) => {
-                    setFilterPriority(event.target.value);
-                    setPage(1);
-                  }}
-                >
-                  <option value="">Todas</option>
-                  {PRIORITY_OPTIONS.map((priority) => (
-                    <option key={priority} value={priority}>{priority}</option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="toolbar__field">
-                <span>Área</span>
-                <select
-                  className="select select--sm"
-                  value={filterArea}
-                  onChange={(event) => {
-                    setFilterArea(event.target.value);
-                    setPage(1);
-                  }}
-                >
-                  <option value="">Todas</option>
-                  {areas.map((area) => (
-                    <option key={area.id} value={area.name}>{area.name}</option>
-                  ))}
-                </select>
-              </label>
-
-              {hasFilters && (
-                <button type="button" className="btn btn--ghost btn--sm" onClick={clearFilters}>
-                  Limpiar filtros
-                </button>
-              )}
-            </div>
+          <div className="stat-grid stat-grid--4">
+            <StatCard
+              label="Total"
+              value={counts.total}
+              hint="Solicitudes registradas"
+              icon={TicketIcon}
+              tone="brand"
+              onClick={() => applyStatusFilter('')}
+            />
+            <StatCard
+              label="Abiertas"
+              value={counts.abiertos}
+              hint="Pendientes de atención"
+              icon={Inbox}
+              tone="info"
+              onClick={() => applyStatusFilter('Abierto')}
+            />
+            <StatCard
+              label="En proceso"
+              value={counts.proceso}
+              hint="En gestión actualmente"
+              icon={Clock}
+              tone="warning"
+              onClick={() => applyStatusFilter('En proceso')}
+            />
+            <StatCard
+              label="Resueltas / cerradas"
+              value={counts.resueltos}
+              hint="Atendidas o finalizadas"
+              icon={CheckCircle2}
+              tone="success"
+              onClick={() => applyStatusFilter('Resuelto')}
+            />
           </div>
 
-          {loading ? (
-            <Loading text="Cargando solicitudes…" />
-          ) : (
-            <>
-              <div className="table-wrap">
-                <table className="data-table data-table--tickets">
-                  <thead>
-                    <tr>
-                      <th>Ticket</th>
-                      <th>Solicitud</th>
-                      <th>Área</th>
-                      <th>Prioridad</th>
-                      <th>Estado</th>
-                      <th>Creado</th>
-                      <th className="col-actions">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pageTickets.length === 0 ? (
-                      <tr>
-                        <td colSpan="7">
-                          <EmptyState
-                            icon={<Inbox size={22} />}
-                            message="No se encontraron solicitudes"
-                            hint={hasFilters
-                              ? 'Prueba con otros criterios de búsqueda o limpia los filtros.'
-                              : 'Aún no hay tickets registrados. Crea la primera solicitud.'}
-                          />
-                        </td>
-                      </tr>
-                    ) : (
-                      pageTickets.map((ticket) => (
-                        <tr
-                          key={ticket.id}
-                          className="is-clickable"
-                          onClick={() => setSelectedTicket(ticket)}
-                        >
-                          <td className="cell-id" data-label="Ticket">#{ticket.id}</td>
-                          <td data-label="Solicitud">
-                            <span className="cell-title" title={ticket.title}>{ticket.title}</span>
-                            <span className="cell-sub" title={ticket.body || ''}>
-                              {ticket.body || 'Sin descripción'}
-                            </span>
-                          </td>
-                          <td data-label="Área">
-                            <span className="chip">{ticket.area || 'Sin área'}</span>
-                          </td>
-                          <td data-label="Prioridad"><PriorityBadge priority={ticket.priority} /></td>
-                          <td data-label="Estado"><StatusBadge status={ticket.status} /></td>
-                          <td className="cell-muted" data-label="Creado">
-                            <time dateTime={ticket.created_at || undefined}>
-                              {formatDate(ticket.created_at)}
-                            </time>
-                          </td>
-                          <td className="col-actions" data-label="Acciones">
-                            <div
-                              className="cell-actions"
-                              onClick={(event) => event.stopPropagation()}
-                            >
-                              <button
-                                type="button"
-                                className="btn btn--ghost btn--sm"
-                                onClick={() => setSelectedTicket(ticket)}
-                                aria-label={`Ver detalle del ticket ${ticket.id}`}
-                              >
-                                <Eye size={15} aria-hidden="true" />
-                                Ver
-                              </button>
+          <section className="card">
+            <div className="toolbar">
+              <div className="toolbar__search">
+                <Search size={16} className="toolbar__search-icon" aria-hidden="true" />
+                <input
+                  type="search"
+                  className="input"
+                  placeholder="Buscar por título o número de ticket"
+                  value={search}
+                  onChange={(event) => {
+                    setSearch(event.target.value);
+                    setPage(1);
+                  }}
+                  aria-label="Buscar solicitudes"
+                />
+                {search && (
+                  <button
+                    type="button"
+                    className="toolbar__clear"
+                    onClick={() => {
+                      setSearch('');
+                      setPage(1);
+                    }}
+                    aria-label="Limpiar búsqueda"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
 
-                              {puedeEditar && (
-                                <select
-                                  className="select select--xs"
-                                  value={ticket.status}
-                                  disabled={updatingId === ticket.id}
-                                  aria-label={`Cambiar estado del ticket ${ticket.id}`}
-                                  onChange={async (event) => {
-                                    const nextStatus = event.target.value;
-                                    const updated = await handleStatusChange(ticket, nextStatus);
-                                    if (!updated) {
-                                      // Fuerza el re-render para restaurar el valor controlado.
-                                      setTickets((prev) => [...prev]);
-                                    }
-                                  }}
-                                >
-                                  {STATUS_OPTIONS.map((status) => (
-                                    <option key={status} value={status}>{status}</option>
-                                  ))}
-                                </select>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
+                {search.trim() && (
+                  <div className="search-suggestions">
+                    {suggestions.length === 0 ? (
+                      <div className="search-suggestions__empty">Sin coincidencias</div>
+                    ) : (
+                      suggestions.map((ticket) => (
+                        <button
+                          type="button"
+                          key={ticket.id}
+                          className="search-suggestions__item"
+                          onClick={() => {
+                            setSearch(ticket.title);
+                            setPage(1);
+                          }}
+                        >
+                          <span className="search-suggestions__id">#{ticket.id}</span>
+                          <span>{ticket.title}</span>
+                        </button>
                       ))
                     )}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="table-footer">
-                <span className="table-footer__info">
-                  {filteredTickets.length === 0
-                    ? '0 solicitudes'
-                    : `Mostrando ${startIndex + 1}–${Math.min(startIndex + PAGE_SIZE, filteredTickets.length)} de ${filteredTickets.length} solicitudes`}
-                </span>
-
-                {totalPages > 1 && (
-                  <div className="pagination">
-                    <button
-                      type="button"
-                      className="pagination__btn"
-                      onClick={() => setPage((current) => Math.max(1, current - 1))}
-                      disabled={safePage === 1}
-                      aria-label="Página anterior"
-                    >
-                      <ChevronLeft size={16} />
-                    </button>
-                    <span className="pagination__pages">
-                      Página {safePage} de {totalPages}
-                    </span>
-                    <button
-                      type="button"
-                      className="pagination__btn"
-                      onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
-                      disabled={safePage === totalPages}
-                      aria-label="Página siguiente"
-                    >
-                      <ChevronRight size={16} />
-                    </button>
                   </div>
                 )}
               </div>
-            </>
-          )}
-        </section>
+
+              <div className="toolbar__filters">
+                <label className="toolbar__field">
+                  <span>Estado</span>
+                  <select
+                    className="select select--sm"
+                    value={filterStatus}
+                    onChange={(event) => {
+                      setFilterStatus(event.target.value);
+                      setPage(1);
+                    }}
+                  >
+                    <option value="">Todos</option>
+                    {STATUS_OPTIONS.map((status) => (
+                      <option key={status} value={status}>{status}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="toolbar__field">
+                  <span>Prioridad</span>
+                  <select
+                    className="select select--sm"
+                    value={filterPriority}
+                    onChange={(event) => {
+                      setFilterPriority(event.target.value);
+                      setPage(1);
+                    }}
+                  >
+                    <option value="">Todas</option>
+                    {PRIORITY_OPTIONS.map((priority) => (
+                      <option key={priority} value={priority}>{priority}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="toolbar__field">
+                  <span>Área</span>
+                  <select
+                    className="select select--sm"
+                    value={filterArea}
+                    onChange={(event) => {
+                      setFilterArea(event.target.value);
+                      setPage(1);
+                    }}
+                  >
+                    <option value="">Todas</option>
+                    {areas.map((area) => (
+                      <option key={area.id} value={area.name}>{area.name}</option>
+                    ))}
+                  </select>
+                </label>
+
+                {hasFilters && (
+                  <button type="button" className="btn btn--ghost btn--sm" onClick={clearFilters}>
+                    Limpiar filtros
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {loading ? (
+              <Loading text="Cargando solicitudes…" />
+            ) : (
+              <>
+                <div className="table-wrap">
+                  <table className="data-table data-table--tickets">
+                    <thead>
+                      <tr>
+                        <th>Ticket</th>
+                        <th>Solicitud</th>
+                        <th>Área</th>
+                        <th>Prioridad</th>
+                        <th>Estado</th>
+                        <th>Creado</th>
+                        <th className="col-actions">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pageTickets.length === 0 ? (
+                        <tr>
+                          <td colSpan="7">
+                            <EmptyState
+                              icon={<Inbox size={22} />}
+                              message="No se encontraron solicitudes"
+                              hint={hasFilters
+                                ? 'Prueba con otros criterios de búsqueda o limpia los filtros.'
+                                : 'Aún no hay tickets registrados. Crea la primera solicitud.'}
+                            />
+                          </td>
+                        </tr>
+                      ) : (
+                        pageTickets.map((ticket) => {
+                          const sem = getTimeSemaforo(ticket);
+                          return (
+                            <tr
+                              key={ticket.id}
+                              className="is-clickable"
+                              onClick={() => setSelectedTicket(ticket)}
+                            >
+                              <td className="cell-id" data-label="Ticket">#{ticket.id}</td>
+                              <td data-label="Solicitud">
+                                <span className="cell-title" title={ticket.title}>{ticket.title}</span>
+                                <span className="cell-sub" title={ticket.body || ''}>
+                                  {ticket.body || 'Sin descripción'}
+                                </span>
+                              </td>
+                              <td data-label="Área">
+                                <span className="chip">{ticket.area || 'Sin área'}</span>
+                              </td>
+                              <td data-label="Prioridad"><PriorityBadge priority={ticket.priority} /></td>
+                              <td data-label="Estado"><StatusBadge status={ticket.status} /></td>
+                              <td className="cell-muted" data-label="Creado">
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} title={sem.tip}>
+                                  <i
+                                    style={{
+                                      width: 8,
+                                      height: 8,
+                                      borderRadius: '50%',
+                                      backgroundColor: sem.color,
+                                      flexShrink: 0,
+                                    }}
+                                    aria-hidden="true"
+                                  />
+                                  <time dateTime={ticket.created_at || undefined}>
+                                    {formatDate(ticket.created_at)}
+                                  </time>
+                                </span>
+                              </td>
+                              <td className="col-actions" data-label="Acciones">
+                                <div
+                                  className="cell-actions"
+                                  onClick={(event) => event.stopPropagation()}
+                                >
+                                  <button
+                                    type="button"
+                                    className="btn btn--ghost btn--sm"
+                                    onClick={() => setSelectedTicket(ticket)}
+                                    aria-label={`Ver detalle del ticket ${ticket.id}`}
+                                  >
+                                    <Eye size={15} aria-hidden="true" />
+                                    Ver
+                                  </button>
+
+                                  {puedeEditar && (
+                                    <select
+                                      className="select select--xs"
+                                      value={ticket.status}
+                                      disabled={updatingId === ticket.id}
+                                      aria-label={`Cambiar estado del ticket ${ticket.id}`}
+                                      onChange={async (event) => {
+                                        const nextStatus = event.target.value;
+                                        const updated = await handleStatusChange(ticket, nextStatus);
+                                        if (!updated) {
+                                          // Fuerza el re-render para restaurar el valor controlado.
+                                          setTickets((prev) => [...prev]);
+                                        }
+                                      }}
+                                    >
+                                      {STATUS_OPTIONS.map((status) => (
+                                        <option key={status} value={status}>{status}</option>
+                                      ))}
+                                    </select>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="table-footer">
+                  <span className="table-footer__info">
+                    {filteredTickets.length === 0
+                      ? '0 solicitudes'
+                      : `Mostrando ${startIndex + 1}–${Math.min(startIndex + PAGE_SIZE, filteredTickets.length)} de ${filteredTickets.length} solicitudes`}
+                  </span>
+
+                  {totalPages > 1 && (
+                    <div className="pagination">
+                      <button
+                        type="button"
+                        className="pagination__btn"
+                        onClick={() => setPage((current) => Math.max(1, current - 1))}
+                        disabled={safePage === 1}
+                        aria-label="Página anterior"
+                      >
+                        <ChevronLeft size={16} />
+                      </button>
+                      <span className="pagination__pages">
+                        Página {safePage} de {totalPages}
+                      </span>
+                      <button
+                        type="button"
+                        className="pagination__btn"
+                        onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                        disabled={safePage === totalPages}
+                        aria-label="Página siguiente"
+                      >
+                        <ChevronRight size={16} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </section>
         </div>
       </div>
 
@@ -674,7 +706,7 @@ export default function EstadoTicketsPage() {
           />
         )}
       </Modal>
-            <Modal
+      <Modal
         open={Boolean(resolving)}
         onClose={() => setResolving(null)}
         title={resolving ? `Resolver ticket #${resolving.id}` : 'Resolver ticket'}
@@ -717,7 +749,6 @@ function TicketDetail({ ticket, puedeEditar, saving, onSaveSolution }) {
   const [history, setHistory] = useState([]);
   const [historyError, setHistoryError] = useState('');
   const [loadingHistory, setLoadingHistory] = useState(false);
-  
 
   useEffect(() => {
     if (!puedeEditar) return undefined;
@@ -805,14 +836,14 @@ function TicketDetail({ ticket, puedeEditar, saving, onSaveSolution }) {
             </button>
           </div>
         </section>
-        ) : (
-          ticket.solution && (
-            <section className="detail-section">
-              <h3 className="detail-section__title">Solución</h3>
-              <p className="detail-description">{ticket.solution}</p>
-            </section>
-          )
-        )}
+      ) : (
+        ticket.solution && (
+          <section className="detail-section">
+            <h3 className="detail-section__title">Solución</h3>
+            <p className="detail-description">{ticket.solution}</p>
+          </section>
+        )
+      )}
 
       <section className="detail-section">
         <h3 className="detail-section__title">Historial de cambios</h3>
@@ -849,7 +880,7 @@ function TicketDetail({ ticket, puedeEditar, saving, onSaveSolution }) {
                   <p className="timeline__meta">
                     Usuario #{entry.changed_by_id} · {formatDateTime(entry.changed_at)}
                   </p>
-                      {entry.solution && (
+                  {entry.solution && (
                     <p className="timeline__note">
                       <strong>Solución:</strong> {entry.solution}
                     </p>

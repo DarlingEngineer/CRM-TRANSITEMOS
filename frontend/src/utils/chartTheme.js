@@ -8,21 +8,20 @@
 // Estados: colores categóricos (cada estado es una identidad distinta).
 export const STATUS_ORDER = ['Abierto', 'En proceso', 'Resuelto', 'Cerrado'];
 export const STATUS_COLORS = {
-  Abierto: '#2a78d6',      // azul
-  'En proceso': '#eda100', // ámbar
-  Resuelto: '#1baf7a',     // verde agua
-  Cerrado: '#4a3aa7',      // violeta
+  Abierto: '#3B82F6',      // Azul informativo (pendiente de asignar)
+  'En proceso': '#F59E0B', // Ámbar semáforo (en seguimiento)
+  Resuelto: '#10B981',     // Verde semáforo (óptimo)
+  Cerrado: '#64748B',      // Gris pizarra neutro (archivado)
 };
 
 // Prioridades: escala ordinal de un solo tono (más oscuro = más urgente).
 export const PRIORITY_ORDER = ['Baja', 'Media', 'Alta', 'Urgente'];
 export const PRIORITY_COLORS = {
-  Baja: '#86b6ef',
-  Media: '#3987e5',
-  Alta: '#1c5cab',
-  Urgente: '#0d366b',
+  Baja: '#10B981',    // Verde semáforo
+  Media: '#F59E0B',   // Ámbar semáforo
+  Alta: '#F97316',    // Naranja alerta
+  Urgente: '#EF4444', // Rojo semáforo
 };
-
 // Serie única (tickets por mes, por área, tiempo de resolución).
 export const SERIES_COLOR = '#2a78d6';
 
